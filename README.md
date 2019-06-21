@@ -5,7 +5,7 @@ My last game of 2022 (rpg+barrage+music+sg)
 角色扮演+弹幕+音乐+即时策略  
   
 # 制作工具  
-Emerald  
+[Emerald](https://github.com/buger404/Emerald)  
 Visual Basic 6.0  
   
 # 正式发布
