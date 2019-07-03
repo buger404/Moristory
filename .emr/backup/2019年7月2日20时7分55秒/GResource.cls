@@ -14,13 +14,10 @@ Attribute VB_Exposed = False
 Private Declare Function CLSIDFromString Lib "ole32.dll" (ByVal lpszProgID As Long, pCLSID As clsid) As Long
 Public HotLoad As Boolean
 Public AssetsFolder As String
-Public SearchIndex As Long
 Dim Mems() As GMem
 Dim effect As Long, effectw As Long, effecth As Long, effectimg As Long, effectindex As Integer
-Dim DisposeMark As Boolean
 Private Sub Class_Initialize()
     ReDim Mems(0)
-    SearchIndex = 1
 End Sub
 Public Sub ClipCircle(n)
     Dim index As Integer
@@ -193,27 +190,6 @@ Private Sub ReDraw(i As Integer)
         GdipDrawImageRect g, Mems(i).ImgHwnd, IIf(s = 1 Or s = 3, Mems(i).w, 0), IIf(s = 2 Or s = 3, Mems(i).h, 0), Mems(i).w * IIf(s = 1 Or s = 3, -1, 1), Mems(i).h * IIf(s = 2 Or s = 3, -1, 1)
         GdipDeleteGraphics g
     Next
-    
-    Dim tempCo As Long, tCo(3) As Byte
-    Dim iW As Long, iH As Long
-
-    ReDim Preserve ColorLists(UBound(ColorLists) + 1)
-    ReDim ColorLists(UBound(ColorLists)).IsAlpha(Mems(i).w + 1, Mems(i).h + 1)
-    
-    DC = Mems(i).Imgs(0)
-    GdipGetImageWidth Mems(i).ImgHwnd, iW: GdipGetImageHeight Mems(i).ImgHwnd, iH
-    For x = 0 To Mems(i).w - 1
-        For y = 0 To Mems(i).h - 1
-            '取得像素点颜色
-            GdipBitmapGetPixel Mems(i).ImgHwnd, x / (Mems(i).w - 1) * iW, y / (Mems(i).h - 1) * iH, tempCo
-            CopyMemory tCo(0), tempCo, 4
-            
-            If tCo(3) = 255 Then ColorLists(UBound(ColorLists)).IsAlpha(x, y) = True
-        Next
-        DoEvents
-    Next
-    
-    Mems(i).CrashIndex = UBound(ColorLists)
 End Sub
 Public Sub Add(mem As Long, kind As Integer, name As String, Optional w, Optional h, Optional Folder As String = "")
     ReDim Preserve Mems(UBound(Mems) + 1)
@@ -248,7 +224,6 @@ Public Property Get ImgSize(n, sizeIndex As imgIndex)
     End Select
 End Property
 Public Sub Dispose()
-    If DisposeMark Then Exit Sub
     For i = 1 To UBound(Mems)
         If Not Mems(i).copyed Then
             Select Case Mems(i).kind
@@ -268,8 +243,6 @@ Public Sub Dispose()
             End If
         End If
     Next
-    
-    DisposeMark = True
 End Sub
 Public Property Get ResourceGIFHandle(index As Integer, frame As Integer) As Long
     ResourceGIFHandle = Mems(index).GIF.frames(frame)
@@ -306,7 +279,7 @@ Public Property Get ResourceImageHandle(index As Integer) As Long
     ResourceImageHandle = Mems(index).ImgHwnd
 End Property
 Public Function GetImage(ByVal name As String) As Integer
-    For i = SearchIndex To UBound(Mems)
+    For i = 1 To UBound(Mems)
         If Mems(i).kind = 0 Then
             If Mems(i).name = name Then GetImage = i: Exit For
         End If
@@ -321,7 +294,7 @@ Public Function GetImage(ByVal name As String) As Integer
         End If
     End If
 End Function
-Public Sub newImage(path As String, Optional arg1, Optional arg2, Optional name As String = "")
+Public Sub newImage(path As String, Optional arg1, Optional arg2)
     'when arg1 is missing ; i.w = i.w
     'when arg2 is missing but arg1 has content ; i.w = i.w * arg1
     'other ; i.w = arg1
@@ -363,7 +336,7 @@ Public Sub newImage(path As String, Optional arg1, Optional arg2, Optional name 
     temp = Split(path, "\")
     ReDim Preserve Mems(UBound(Mems) + 1)
     With Mems(UBound(Mems))
-        .name = IIf(name = "", temp(UBound(temp)), name)
+        .name = temp(UBound(temp))
         .Folder = temp(UBound(temp) - 1)
         .w = w
         .h = h
@@ -386,13 +359,13 @@ Public Sub newImage(path As String, Optional arg1, Optional arg2, Optional name 
     
     DC = Mems(UBound(Mems)).Imgs(0)
     GdipGetImageWidth i, iW: GdipGetImageHeight i, iH
-    For x = 0 To w - 1
-        For y = 0 To h - 1
+    For X = 0 To w - 1
+        For Y = 0 To h - 1
             '取得像素点颜色
-            GdipBitmapGetPixel i, x / (w - 1) * iW, y / (h - 1) * iH, tempCo
+            GdipBitmapGetPixel i, X / (w - 1) * iW, Y / (h - 1) * iH, tempCo
             CopyMemory tCo(0), tempCo, 4
 
-            If tCo(3) = 255 Then ColorLists(UBound(ColorLists)).IsAlpha(x, y) = True
+            If tCo(3) = 255 Then ColorLists(UBound(ColorLists)).IsAlpha(X, Y) = True
         Next
         DoEvents
     Next

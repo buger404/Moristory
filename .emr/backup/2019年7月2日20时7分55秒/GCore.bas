@@ -10,14 +10,8 @@ Attribute VB_Name = "GCore"
         x As Single
         y As Single
     End Type
-    Public Enum PlayStateMark
-        musStopped = 0
-        musPlaying = 1
-        musStalled = 2
-        musPaused = 3
-    End Enum
     Public Enum imgIndex
-        imgGetWidth = 0
+        imgGetwidth = 0
         imgGetHeight = 1
         imgGetGIFFrameCount = 2
     End Enum
@@ -30,10 +24,10 @@ Attribute VB_Name = "GCore"
     Public Enum PosAlign
         posNormal = 0
         posOnCenter = 1
-        posOnLeft = 4
-        posOnTop = 5
-        posOnRight = 2
-        posOnBottom = 3
+        posOnLeft = 2
+        posOnTop = 3
+        posOnRight = 4
+        posOnBottom = 5
     End Enum
     Public Enum TranslationKind
         transFadeIn = 0
@@ -104,9 +98,8 @@ Attribute VB_Name = "GCore"
     Public FPSWarn As Long
     Public EmeraldInstalled As Boolean
     Public BassInstalled As Boolean
-    Public Const Version As Long = 19070202      'hhhhhhhhh
+    Public Const Version As Long = 19062503
     Public TextHandle As Long, WaitChr As String
-    
     Dim AssetsTrees() As AssetsTree
     Dim LastKeyUpRet As Boolean
     Dim Wndproc As Long
@@ -207,8 +200,6 @@ Attribute VB_Name = "GCore"
         End If
         
         If DebugMode Then
-            Debuginfo.Show
-            Debuginfo.Hide
             DebugWindow.Show
         End If
         
@@ -267,7 +258,7 @@ sth:
         
         GetWinNTVersion = Left(strOSversion, 3)
     End Function
-    Public Sub BlurTo(DC As Long, srcDC As Long, buffWin As Form, Optional radius As Long = 60)
+    Public Sub BlurTo(DC As Long, srcDC As Long, buffWin As Form, Optional Radius As Long = 60)
         Dim i As Long, g As Long, e As Long, b As BlurParams, w As Long, h As Long
         '粘贴到缓冲窗口
         buffWin.AutoRedraw = True
@@ -277,7 +268,7 @@ sth:
         GdipCreateBitmapFromHBITMAP buffWin.Image.handle, buffWin.Image.hpal, i
         
         '模糊操作
-        GdipCreateEffect2 GdipEffectType.Blur, e: b.radius = radius: GdipSetEffectParameters e, b, LenB(b)
+        GdipCreateEffect2 GdipEffectType.Blur, e: b.Radius = Radius: GdipSetEffectParameters e, b, LenB(b)
         GdipGetImageWidth i, w: GdipGetImageHeight i, h
         GdipBitmapApplyEffect i, e, NewRectL(0, 0, w, h), 0, 0, 0
         
@@ -287,12 +278,12 @@ sth:
         GdipDisposeImage i: GdipDeleteGraphics g: GdipDeleteEffect e '垃圾处理
         buffWin.AutoRedraw = False
     End Sub
-    Public Sub BlurImg(img As Long, radius As Long)
+    Public Sub BlurImg(img As Long, Radius As Long)
         Dim b As BlurParams, e As Long, w As Long, h As Long
         
         '模糊操作
 
-        GdipCreateEffect2 GdipEffectType.Blur, e: b.radius = radius: GdipSetEffectParameters e, b, LenB(b)
+        GdipCreateEffect2 GdipEffectType.Blur, e: b.Radius = Radius: GdipSetEffectParameters e, b, LenB(b)
         GdipGetImageWidth img, w: GdipGetImageHeight img, h
         GdipBitmapApplyEffect img, e, NewRectL(0, 0, w, h), 0, 0, 0
         
@@ -430,7 +421,7 @@ sth:
                 data.PutData "UpdateAble", 1
                 If MsgBox("发现Emerald存在新版本，您希望现在前往下载吗？", vbYesNo + 48, "Emerald") = vbNo Then Exit Sub
                 
-                ShellExecuteA 0, "open", "https://github.com/Red-Error404/Emerald/release", "", "", SW_SHOW
+                ShellExecuteA 0, "open", "https://github.com/Red-Error404/Emerald", "", "", SW_SHOW
                 data.PutData "UpdateAble", 0
             End If
         Else
