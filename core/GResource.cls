@@ -108,6 +108,7 @@ Public Sub ApplySharpenEffect(n, amount As Single, radius As Single)
     ApplyEffectStep2
 End Sub
 Public Sub ApplyBlurEffect(n, radius As Long, edge As Integer)
+
     Dim e As BlurParams
     e.radius = radius
     e.expandEdge = edge
@@ -115,6 +116,7 @@ Public Sub ApplyBlurEffect(n, radius As Long, edge As Integer)
     ApplyEffect n, Blur
     GdipSetEffectParameters effect, e, LenB(e)
     ApplyEffectStep2
+
 End Sub
 Public Sub ApplyBrightnessContrastEffect(n, brightnessLevel As Long, contrastLevel As Long)
     Dim e As BrightnessContrastParams
@@ -172,7 +174,7 @@ Public Sub ApplyLevelsEffect(n, highlight As Long, midtone As Long, Shadow As Lo
     e.midtone = midtone
     e.Shadow = Shadow
 
-    ApplyEffect n, Levels
+    ApplyEffect n, levels
     GdipSetEffectParameters effect, e, LenB(e)
     ApplyEffectStep2
 End Sub
@@ -194,6 +196,8 @@ Private Sub ReDraw(i As Integer)
         GdipDeleteGraphics g
     Next
     
+    If Mems(i).w = GW And Mems(i).h = GH Then Exit Sub
+    
     Dim tempCo As Long, tCo(3) As Byte
     Dim iW As Long, iH As Long
 
@@ -202,13 +206,13 @@ Private Sub ReDraw(i As Integer)
     
     DC = Mems(i).Imgs(0)
     GdipGetImageWidth Mems(i).ImgHwnd, iW: GdipGetImageHeight Mems(i).ImgHwnd, iH
-    For x = 0 To Mems(i).w - 1
-        For y = 0 To Mems(i).h - 1
+    For X = 0 To Mems(i).w - 1
+        For Y = 0 To Mems(i).h - 1
             '取得像素点颜色
-            GdipBitmapGetPixel Mems(i).ImgHwnd, x / (Mems(i).w - 1) * iW, y / (Mems(i).h - 1) * iH, tempCo
+            GdipBitmapGetPixel Mems(i).ImgHwnd, X / (Mems(i).w - 1) * iW, Y / (Mems(i).h - 1) * iH, tempCo
             CopyMemory tCo(0), tempCo, 4
             
-            If tCo(3) = 255 Then ColorLists(UBound(ColorLists)).IsAlpha(x, y) = True
+            If tCo(3) = 255 Then ColorLists(UBound(ColorLists)).IsAlpha(X, Y) = True
         Next
         DoEvents
     Next
@@ -378,6 +382,8 @@ Public Sub newImage(path As String, Optional arg1, Optional arg2, Optional name 
         Mems(UBound(Mems)).Imgs(s) = DC
     Next
     
+    If w = GW And h = GH Then Exit Sub
+    
     Dim tempCo As Long, tCo(3) As Byte
     Dim iW As Long, iH As Long
 
@@ -386,13 +392,13 @@ Public Sub newImage(path As String, Optional arg1, Optional arg2, Optional name 
     
     DC = Mems(UBound(Mems)).Imgs(0)
     GdipGetImageWidth i, iW: GdipGetImageHeight i, iH
-    For x = 0 To w - 1
-        For y = 0 To h - 1
+    For X = 0 To w - 1
+        For Y = 0 To h - 1
             '取得像素点颜色
-            GdipBitmapGetPixel i, x / (w - 1) * iW, y / (h - 1) * iH, tempCo
+            GdipBitmapGetPixel i, X / (w - 1) * iW, Y / (h - 1) * iH, tempCo
             CopyMemory tCo(0), tempCo, 4
 
-            If tCo(3) = 255 Then ColorLists(UBound(ColorLists)).IsAlpha(x, y) = True
+            If tCo(3) = 255 Then ColorLists(UBound(ColorLists)).IsAlpha(X, Y) = True
         Next
         DoEvents
     Next
@@ -419,7 +425,7 @@ Public Sub NewImages(path As String, Optional arg1, Optional arg2)
     If index = 0 Then
         PreLoadCount = PreLoadCount + c
     Else
-        Tree = GetAssetsTree(path)
+        Tree = AssetsTrees(index)
         For i = 1 To UBound(Tree.files)
             ReDim Preserve Mems(UBound(Mems) + 1)
             Mems(UBound(Mems)) = Tree.files(i)
@@ -448,4 +454,3 @@ Public Sub NewImages(path As String, Optional arg1, Optional arg2)
     
     If index = 0 Then AddAssetsTree Tree, arg1, arg2
 End Sub
-

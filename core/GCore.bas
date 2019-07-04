@@ -104,10 +104,10 @@ Attribute VB_Name = "GCore"
     Public FPSWarn As Long
     Public EmeraldInstalled As Boolean
     Public BassInstalled As Boolean
-    Public Const Version As Long = 19070202      'hhhhhhhhh
+    Public Const Version As Long = 19070404      'hhhhhhhhhhhhhhhhffff
     Public TextHandle As Long, WaitChr As String
     
-    Dim AssetsTrees() As AssetsTree
+    Public AssetsTrees() As AssetsTree
     Dim LastKeyUpRet As Boolean
     Dim Wndproc As Long
 '================================================================================
@@ -222,6 +222,7 @@ Attribute VB_Name = "GCore"
     End Sub
     Public Sub EndEmerald()
         If DebugMode Then
+            Unload Debuginfo
             Unload DebugWindow
         End If
         
@@ -444,6 +445,8 @@ sth:
     Public Function AddAssetsTree(Tree As AssetsTree, arg1 As Variant, arg2 As Variant)
         ReDim Preserve AssetsTrees(UBound(AssetsTrees) + 1)
         AssetsTrees(UBound(AssetsTrees)) = Tree
+        AssetsTrees(UBound(AssetsTrees)).arg1 = arg1
+        AssetsTrees(UBound(AssetsTrees)).arg2 = arg2
     End Function
     Public Function FindAssetsTree(path As String, arg1 As Variant, arg2 As Variant) As Integer
         On Error Resume Next
