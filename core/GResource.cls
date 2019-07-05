@@ -364,6 +364,11 @@ Public Sub newImage(path As String, Optional arg1, Optional arg2, Optional name 
         Exit Sub
     End If
     
+    Dim Ccx As Long, Ccy As Long
+    If path Like "*face\bm-*.png" Then Ccx = 707: Ccy = 375: w = 355: h = 825
+    If path Like "*face\kx1-*.png" Then Ccx = 1096: Ccy = 220: w = 389: h = 389
+    If path Like "*face\xx-*.png" Then Ccx = 1115: Ccy = 463: w = 379: h = 751
+    
     temp = Split(path, "\")
     ReDim Preserve Mems(UBound(Mems) + 1)
     With Mems(UBound(Mems))
@@ -377,12 +382,16 @@ Public Sub newImage(path As String, Optional arg1, Optional arg2, Optional name 
     For s = 0 To 3
         DC = CreateCDC(w, h)
         GdipCreateFromHDC DC, g
-        GdipDrawImageRect g, i, IIf(s = 1 Or s = 3, w, 0), IIf(s = 2 Or s = 3, h, 0), w * IIf(s = 1 Or s = 3, -1, 1), h * IIf(s = 2 Or s = 3, -1, 1)
+        If Ccx <> 0 Then
+            GdipDrawImageRect g, i, -Ccx, -Ccy, 1600, 1200
+        Else
+            GdipDrawImageRect g, i, IIf(s = 1 Or s = 3, w, 0) - Ccx, IIf(s = 2 Or s = 3, h, 0) - Ccy, w * IIf(s = 1 Or s = 3, -1, 1), h * IIf(s = 2 Or s = 3, -1, 1)
+        End If
         GdipDeleteGraphics g
         Mems(UBound(Mems)).Imgs(s) = DC
     Next
     
-    If w = GW And h = GH Then Exit Sub
+    If (w = GW And h = GH) Or Ccx <> 0 Then Exit Sub
     
     Dim tempCo As Long, tCo(3) As Byte
     Dim iW As Long, iH As Long

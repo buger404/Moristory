@@ -4,3 +4,4 @@ Public SE As GMusicList
 
 Public MainPage As MainPage
 Public NovelPage As NovelPage
+Public MazePage As MazePage

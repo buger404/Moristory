@@ -29,6 +29,7 @@ Form=code\GameWindow.frm
 Class=MainPage; code\MainPage.cls
 Class=NovelPage; code\NovelPage.cls
 Module=MoriCore; code\MoriCore.bas
+Class=MazePage; code\MazePage.cls
 Startup="GameWindow"
 HelpFile=""
 Title="Moristory"

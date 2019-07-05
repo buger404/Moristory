@@ -38,7 +38,9 @@ Attribute VB_Exposed = False
     Dim Speaker As String
     Dim SpeakerName As String
     Dim TimeLine As Long
-    Dim QuesTime As Long, Ques As Question, BlurDC As Long
+    Dim QuesTime As Long, Ques As Question, BlurDC As Long, ODC As Long
+    Dim MsgTime As Long, AddingText As String, MsgTime2 As Long, AddPos As Long
+    Dim MsgEvent As String
 '======================================
 Public Function GetSpeakerName(Speaker As String) As String
     GetSpeakerName = "？？？"
@@ -66,6 +68,9 @@ Public Function GetSpeakerName(Speaker As String) As String
             If InStr(Speaker, "dark") = 1 Then SpeakerName = "？？？"
     End Select
 End Function
+Public Function GetStrLine() As String
+    GetStrLine = UBound(Split(DisplayText, vbCrLf))
+End Function
 Public Sub RunNovel()
 Exec:
     If CuLine > UBound(NLines) Then Exit Sub
@@ -91,10 +96,10 @@ Exec:
         '这不是你的时间线的剧情。。。
         If JumpTimeline Then
             If UBound(Params) = 2 Then
-                If Params(0) <> "timeline" And Params(2) <> "end" And JumpTimeline Then
+                If Params(0) = "timeline" And Params(2) = "end" Then
+                    JumpTimeline = False
                     CuLine = CuLine + 1: GoTo Exec
                 Else
-                    JumpTimeline = False
                     CuLine = CuLine + 1: GoTo Exec
                 End If
             Else
@@ -103,10 +108,16 @@ Exec:
         End If
         
         Select Case Params(0)
+            Case "***death"
+                SE.Play "Collapse4.mp3"
+                ECore.NewTransform transFallDark, 2000, "MainPage"
+                Debug.Print Now, "你在 #" & TimeLine & " 时间线，PART " & PART & "的第" & CuLine & "行死了。"
+                Exit Sub
             Case "question"
                 AnswerStep = Val(Params(2))
                 Ques.Title = Params(1)
                 ReDim Ques.Answers(AnswerStep)
+                PaintDC Page.CDC, ODC, 0, 0, Alpha:=1
                 BlurTo BlurDC, GDC, GameWindow
                 Mode = "question"
             Case "timeline"
@@ -191,6 +202,11 @@ Exec:
                 ECore.NewTransform transFallDark, 1000
                 Call ReadNovel
                 Exit Sub
+            Case "*event"
+                MsgEvent = Params(1)
+                If MsgEvent Like "ani+*" Then
+                    Page.SwitchChannel MsgEvent, "Default"
+                End If
         End Select
     ElseIf Left(NLines(CuLine), 1) <> "#" Then
         If JumpTimeline Then CuLine = CuLine + 1: GoTo Exec
@@ -203,9 +219,21 @@ Exec:
             End If
             SpeakerName = GetSpeakerName(Speaker)
         Else
-            DisplayText = DisplayText & NLines(CuLine) & vbCrLf
-            If Mode <> "scroll" Then ECore.NewTransform
-            If Mode = "scroll" Then LLineTime = GetTickCount
+            If Mode <> "scroll" Then
+                AddPos = 1
+                AddingText = NLines(CuLine)
+                If GetStrLine = 3 Then
+                    DisplayText = Split(DisplayText, vbCrLf)(1) & vbCrLf & _
+                                  Split(DisplayText, vbCrLf)(2) & vbCrLf & _
+                                  Split(DisplayText, vbCrLf)(3)
+                End If
+                
+                If DisplayText <> "" Then DisplayText = DisplayText & vbCrLf
+                MsgTime = GetTickCount: MsgTime2 = GetTickCount
+            Else
+                DisplayText = DisplayText & NLines(CuLine) & vbCrLf
+                LLineTime = GetTickCount
+            End If
             CuLine = CuLine + 1
             Exit Sub
         End If
@@ -250,6 +278,7 @@ Public Sub DrawQues()
     If pro < 0 Then pro = 0
     pro = Cubic(pro, 0, 0, 0, 1)
 
+    PaintDC ODC, Page.CDC, 0, 0, Alpha:=pro * 1
     PaintDC BlurDC, Page.CDC, 0, 0, Alpha:=1 - pro * 1
     Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(130 - pro * 130, 0, 0, 0)
     
@@ -262,17 +291,22 @@ Public Sub DrawQues()
     ah = Page.Res.ImgSize("answerpad.png", imgGetHeight)
     
     For i = 0 To UBound(Ques.Answers) - 1
-        m = CheckMouse(GW / 2, GH / 2 - 59 + 170 + i * 70 + pro * 500, aw, ah)
+        m = CheckMouse(GW / 2 - aw / 2, GH / 2 - 59 + 170 + i * 70 + pro * 500 - ah / 2, aw, ah)
         Page.DrawImage "answerpad.png", GW / 2, GH / 2 - 59 + 170 + i * 70 + pro * 500, Alpha:=IIf(m <> 0, 1, 0.5), pos:=posOnCenter
         Page.Writes (i + 1) & ". " & Ques.Answers(i).Caption, GW / 2 - 200, GH / 2 - 59 + 170 + i * 70 - 12 + pro * 500, 16, argb(200, 27, 27, 27)
         If m = 3 Then
             Mode = "msg"
             ECore.NewTransform
-            If Ques.Answers(i).JTimeLine <> 0 Then TimeLine = Ques.Answers(i).JTimeLine
+            If Ques.Answers(i).JTimeLine <> 0 Then TimeLine = Ques.Answers(i).JTimeLine: ESave.PutData "TIMELINE", TimeLine
             For s = 1 To UBound(Roles)
                 If Roles(s).name = Speaker Then
                     Roles(s).Love = Roles(s).Love + Ques.Answers(i).LoveIncrase
                     ESave.PutData Roles(s).name & "'s love", Roles(s).Love
+                    If Ques.Answers(i).LoveIncrase > 0 Then
+                        MsgEvent = "ani+ballon_love"
+                    ElseIf Ques.Answers(i).LoveIncrase < 0 Then
+                        MsgEvent = "ani+ballon_han"
+                    End If
                     Exit For
                 End If
             Next
@@ -283,16 +317,60 @@ End Sub
 Public Sub DrawMsg()
     Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(130, 0, 0, 0)
     
+    Dim pro As Single
+
+    pro = (GetTickCount - MsgTime2) / 2000
+    If pro > 1 Then
+        If MsgEvent Like "looptext:*" Then
+            pro = pro - Int(pro)
+        Else
+            pro = 1
+        End If
+    End If
+    pro = Cubic(pro, 0, 1, 1, 1)
+    
+    Dim X As Long
+    X = GW / 2
     For i = 1 To UBound(Roles)
-        Page.DrawImage Roles(i).name & ".png", GW / 2 - 120 * UBound(Roles) / 2 + (i - 1) * 120 - 120 / 2, GH + 80, Alpha:=IIf(Speaker <> Roles(i).name And Speaker <> "aside", 0.7, 1), pos:=posOnBottom
+        X = X - (Page.Res.ImgSize(Roles(i).name & "-" & Roles(i).Face & ".png", imgGetWidth) + 50) / 2
     Next
     
-    Page.DrawImage "dialog.png", GW / 2, GH - 130, Alpha:=1, pos:=posOnCenter
-    If CheckMouse2 = mMouseUp Then Call RunNovel
+    X = X + 30
+    
+    For i = 1 To UBound(Roles)
+        Page.DrawImage Roles(i).name & "-" & Roles(i).Face & ".png", X, GH + 140 + IIf(Page.Res.ImgSize(Roles(i).name & "-" & Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0), Alpha:=IIf(Speaker <> Roles(i).name And Speaker <> "aside", 0.7, 1), pos:=posOnBottom
+        X = X + (Page.Res.ImgSize(Roles(i).name & "-" & Roles(i).Face & ".png", imgGetWidth) + 50)
+    Next
+    
+    If AddPos <= Len(AddingText) Then
+        If GetTickCount - MsgTime >= 25 Then DisplayText = DisplayText & Mid(AddingText, AddPos, 1): AddPos = AddPos + 1: MsgTime = GetTickCount
+    End If
+    
+    Page.DrawImage IIf(Speaker = "aside", "aside", "") & "dialog.png", GW / 2, GH - 130, Alpha:=1, pos:=posOnCenter
+    If CheckMouse2 = mMouseUp Then
+        If AddPos > Len(AddingText) Then
+            MsgEvent = ""
+            Call RunNovel
+        Else
+            'Skip
+            SE.Play "Cursor.mp3"
+            DisplayText = DisplayText & Mid(AddingText, AddPos, Len(AddingText) - AddPos)
+            AddPos = Len(AddingText)
+            ECore.NewTransform
+        End If
+    End If
     
     Page.Writes DisplayText, GW / 2 - 300, GH - 190, 18, argb(200, 27, 27, 27)
-    Page.Writes SpeakerName, GW / 2 - 5, GH - 78, 24, argb(255, 255, 255, 255), align:=StringAlignmentCenter
+    If Speaker <> "aside" Then Page.Writes SpeakerName, GW / 2 - 5, GH - 78, 24, argb(255, 255, 255, 255), align:=StringAlignmentCenter
     
+    If MsgEvent Like "ani+*" Then
+        'Page.SwitchChannel MsgEvent, "Default"
+        Page.DrawAnimation MsgEvent, GW - 200, GH - 140
+    End If
+    
+    If MsgEvent Like "*text:*" Then
+        Page.Writes Split(MsgEvent, "text:")(1), GW / 2, 100 - 90 * pro, 48, argb(pro * 255, 255, 255, 255), align:=StringAlignmentCenter
+    End If
 End Sub
 Public Sub DrawScroll()
     Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(170, 0, 0, 0)
@@ -338,7 +416,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, Msg As String)
+Public Sub AnimationMsg(id As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -353,7 +431,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(ID As Integer)
+Public Sub AnimationDone(id As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub
@@ -362,17 +440,34 @@ Private Sub Class_Initialize()
     Set Page = New GPage
     Page.Create Me
     '导入游戏资源
-    Page.Res.NewImages App.path & "\assets\bg", 1000, 740
-    Page.Res.NewImages App.path & "\assets\fg", 1000, 740
-    Page.Res.NewImages App.path & "\assets\ui", 0.68
-    Page.Res.NewImages App.path & "\assets\face", 1
+    'Page.Res.NewImages App.path & "\assets\bg", 1000, 740
+    'Page.Res.NewImages App.path & "\assets\fg", 1000, 740
+    'Page.Res.NewImages App.path & "\assets\ui", 0.68
+    'Page.Res.NewImages App.path & "\assets\face"
+    'Page.Res.NewImages App.path & "\assets\animation"
+    
+    Page.LoadAnimationsFromDir App.path & "\animation"
+    Page.CreatePlayAnimation "ballon_jing", "ani+ballon_jing", "Default"
+    Page.CreatePlayAnimation "ballon_ques", "ani+ballon_ques", "Default"
+    Page.CreatePlayAnimation "ballon_love", "ani+ballon_love", "Default"
+    Page.CreatePlayAnimation "ballon_angry", "ani+ballon_angry", "Default"
+    Page.CreatePlayAnimation "ballon_fan", "ani+ballon_fan", "Default"
+    Page.CreatePlayAnimation "ballon_han", "ani+ballon_han", "Default"
+    Page.CreatePlayAnimation "ballon_happy", "ani+ballon_happy", "Default"
+    Page.CreatePlayAnimation "ballon_silence", "ani+ballon_silence", "Default"
+    
     '创建页面
     ECore.Add Page, "NovelPage"
     ReDim NLines(0)
     BlurDC = CreateCDC(GW, GH)
+    ODC = CreateCDC(GW, GH)
     '===============================================
     '   如果需要添加动画，请放置在此处
     
     '===============================================
 End Sub
 
+Private Sub Class_Terminate()
+    DeleteObject BlurDC
+    DeleteObject ODC
+End Sub
