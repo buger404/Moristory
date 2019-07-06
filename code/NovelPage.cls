@@ -108,6 +108,13 @@ Exec:
         End If
         
         Select Case Params(0)
+            Case "go"
+                Select Case Params(1)
+                    Case "maze"
+                        CuLine = CuLine + 1
+                        ECore.NewTransform transFallDark, 3000, "MazePage"
+                        Exit Sub
+                End Select
             Case "***death"
                 SE.Play "Collapse4.mp3"
                 ECore.NewTransform transFallDark, 2000, "MainPage"
@@ -416,7 +423,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(id As String, msg As String)
+Public Sub AnimationMsg(ID As String, Msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -431,7 +438,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(id As Integer)
+Public Sub AnimationDone(ID As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub
@@ -440,11 +447,13 @@ Private Sub Class_Initialize()
     Set Page = New GPage
     Page.Create Me
     '导入游戏资源
-    'Page.Res.NewImages App.path & "\assets\bg", 1000, 740
-    'Page.Res.NewImages App.path & "\assets\fg", 1000, 740
-    'Page.Res.NewImages App.path & "\assets\ui", 0.68
-    'Page.Res.NewImages App.path & "\assets\face"
-    'Page.Res.NewImages App.path & "\assets\animation"
+    Page.Res.HotLoad = True
+    
+    Page.Res.NewImages App.path & "\assets\bg", 1000, 740
+    Page.Res.NewImages App.path & "\assets\fg", 1000, 740
+    Page.Res.NewImages App.path & "\assets\ui", 0.68
+    Page.Res.NewImages App.path & "\assets\face"
+    Page.Res.NewImages App.path & "\assets\animation"
     
     Page.LoadAnimationsFromDir App.path & "\animation"
     Page.CreatePlayAnimation "ballon_jing", "ani+ballon_jing", "Default"

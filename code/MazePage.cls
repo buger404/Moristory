@@ -16,13 +16,17 @@ Attribute VB_Exposed = False
     Dim Page As GPage
     Dim Map() As Integer
     Dim PX As Single, PY As Single
+    Dim DarkX As Single, DarkY As Single, FollowStep As Long
+    Dim FX(5) As Single, FY(5) As Single
     Dim StartX As Long, StartY As Long, EndX As Long, EndY As Long
+    Dim XRemain As Single, YRemain As Single
     Dim MapDC As Long, CoverDC As Long
 '======================================
 Public Sub LoadMap()
     Dim w As Long, h As Long, Image As Long, Color As Long
 
     Page.Res.newImage App.path & "\assets\ui\maze.png"
+    Page.Res.newImage App.path & "\assets\ui\shadow.png", GW, GH
     Image = Page.Res.ResourceImageHandle(Page.Res.GetImage("maze.png"))
     GdipGetImageWidth Image, w: GdipGetImageHeight Image, h
     
@@ -62,11 +66,12 @@ Public Sub LoadMap()
         Next
     Next
     Page.CDC = ODC
+    
 End Sub
 Public Sub Update()
     '游戏每一帧的过程（绘制过程请放在此处）
     
-    Page.Clear '清空画布
+    Page.Clear argb(255, 123, 199, 47) '清空画布
 
     Dim w As Long, h As Long, cx As Long, cy As Long
     cx = (PX - 0) * 90 - GW / 2 + 45
@@ -78,18 +83,70 @@ Public Sub Update()
     If w > GW Then w = GW
     If h > GH Then h = GH
     
+    Dim pro As Single
+    pro = 1 - (Abs(EndX - PX) + Abs(EndY - PY)) / 5
+    If pro < 0 Then pro = 0
+    If pro > 1 Then pro = 1
+    
     PaintDC MapDC, Page.CDC, IIf(cx < 0, -cx, 0), IIf(cy < 0, -cy, 0), IIf(cx >= 0, cx, 0), IIf(cy >= 0, cy, 0), w, h, 1
+    Page.DrawImage "darkssr.png", (DarkX - 0) * 90 - cx, (DarkY - 0) * 90 - cy, Alpha:=1 - pro * 4.6
     Page.Paint 1, GW / 2 - 45, GH / 2 - 45, 90, 90, argb(255, 255, 255, 255)
     PaintDC CoverDC, Page.CDC, IIf(cx < 0, -cx, 0), IIf(cy < 0, -cy, 0), IIf(cx >= 0, cx, 0), IIf(cy >= 0, cy, 0), w, h, 1
+    
+    Page.DrawImage "shadow.png", 0, 0, Alpha:=1 - pro * 1
+    Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(pro * 255, 255, 255, 255)
+    
+    If pro = 1 Then
+        BGM.rate = 1
+        BGS.Dispose
+        NovelPage.RunNovel
+        SE.Play "Defense_3D.mp3"
+        ECore.NewTransform transHighLight, 3000, "NovelPage"
+    End If
     
     Dim HuaIndex As Integer
     HuaIndex = Page.Res.GetImage("black.png")
     
-    If IsKeyPress(VK_UP) And Map(Int(PX), Int(PY - 0.05)) <> HuaIndex Then PY = PY - 0.05
-    If IsKeyPress(VK_DOWN) And Map(Int(PX), Int(PY + 0.05 + IIf(PY - Int(PY) < 0.5, 1, 0))) <> HuaIndex Then PY = PY + 0.05
-    If IsKeyPress(VK_LEFT) And Map(Int(PX - 0.05), Int(PY)) <> HuaIndex Then PX = PX - 0.05
-    If IsKeyPress(VK_RIGHT) And Map(Int(PX + 0.05 + 1), Int(PY)) <> HuaIndex Then PX = PX + 0.05
+    If XRemain <> 0 Then
+        If Abs(XRemain) < 0.1 Then
+            For i = 0 To 4
+                FX(i) = FX(i + 1): FY(i) = FY(i + 1)
+            Next
+            XRemain = 0: PX = Round(PX)
+        Else
+            PX = PX + IIf(XRemain < 0, -0.1, 0.1)
+            XRemain = XRemain - IIf(XRemain < 0, -0.1, 0.1)
+            If FollowStep <= 50 Then FollowStep = FollowStep + 1
+            If FollowStep >= 50 Then FX(5) = PX: FY(5) = PY
+        End If
+    End If
+    If YRemain <> 0 Then
+        If Abs(YRemain) < 0.1 Then
+            For i = 0 To 4
+                FX(i) = FX(i + 1): FY(i) = FY(i + 1)
+            Next
+            YRemain = 0: PY = Round(PY)
+        Else
+            PY = PY + IIf(YRemain < 0, -0.1, 0.1)
+            YRemain = YRemain - IIf(YRemain < 0, -0.1, 0.1)
+            If FollowStep <= 50 Then FollowStep = FollowStep + 1
+            If FollowStep >= 50 Then FX(5) = PX: FY(5) = PY
+        End If
+    End If
     
+    DarkX = IIf(Abs(PX - FX(0)) < 2 And pro = 0, 0, FX(0)): DarkY = IIf(Abs(PY - FY(0)) < 2 And pro = 0, 0, FY(0))
+    If pro > 0 Then
+        DarkX = PX - 5
+        DarkY = PY
+    End If
+    
+    If IsKeyPress(VK_UP) And Map(Round(PX), Round(PY - 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then YRemain = -1
+    If IsKeyPress(VK_DOWN) And Map(Round(PX), Round(PY + 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then YRemain = 1
+    If IsKeyPress(VK_LEFT) And Map(Round(PX - 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then XRemain = -1
+    If IsKeyPress(VK_RIGHT) And Map(Round(PX + 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then XRemain = 1
+    
+    If BGM.PlayState = musStopped And BGM.length <> 0 Then BGM.Play
+    If BGS.PlayState = musStopped And BGS.length <> 0 Then BGS.Play
 End Sub
 Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
@@ -100,6 +157,11 @@ Public Sub AnimationMsg(ID As String, Msg As String)
 End Sub
 Public Sub Enter()
     '页面进入事件
+    BGM.Create App.path & "\music\bgm\OST 4 - Garden Party.mp3"
+    BGM.rate = 0.8
+    BGM.Play
+    BGS.Create App.path & "\music\bgs\Nightforest.mp3"
+    BGS.Play
 End Sub
 Public Sub Leave()
     '页面离开事件

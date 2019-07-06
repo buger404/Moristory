@@ -56,12 +56,8 @@ Private Sub Form_Load()
     '创建存档（可选）
     Set ESave = New GSaving
     ESave.Create "Moristory.TIMELINE", "kj" & Val(Me.Visible) & "Ehsd" & Val(VB.Screen.FontCount <> 0) & "Cdfd" & Right(Left("54B89", 3), 1) & "3fdkg5" & UCase("d") & "gsA6D1F7305BEjAC8738C" & CLng("&HE2") & "kjgds"
-    ESave.PutData "PART", "2"
+    ESave.PutData "PART", "3"
     ESave.PutData "TIMELINE", "1"
-    
-    '创建音乐列表
-    Set MusicList = New GMusicList
-    MusicList.Create App.path & "\music"
 
     '开始显示
     Me.Show
@@ -70,6 +66,7 @@ Private Sub Form_Load()
     Set BGM = New GMusic
     Set BGS = New GMusic
     Set SE = New GMusicList
+    SE.HotLoad = True
     SE.Create App.path & "\music\se"
     BGS.Volume = 0.3
     
@@ -81,6 +78,7 @@ Private Sub Form_Load()
         Set MainPage = New MainPage
         Set NovelPage = New NovelPage
         Set MazePage = New MazePage
+        MazePage.LoadMap
     '=============================================
 
     '设置活动页面

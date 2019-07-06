@@ -6,14 +6,22 @@
 *bgs\
 say\aside
 青默默数完30秒，睁开眼追了上去，
+bg\0,0,0
 这才发现它走进了一个迷宫。
-go\mazz
-（在此插入一个迷宫）
+奇怪的是，进入迷宫以后，视野就暗了下来。
+say\me
+怎么回事？这里好黑啊。
+是黑嘴准备的游戏吗。。。？
+*play\Defense_3D.mp3
+go\maze
 say\aside
+*bg\garden.jpg
 *fg\Stone2.png
+say\aside
 最后，它走到了迷宫的尽头。
 前方，只有一堵墙。
 say\darkxx
+*bgm\OST 3 - Sweet Flower.mp3
 “Hi, my Dear Angel~”
 一个甜美动听的女声突然在耳边响起。
 say\xx
