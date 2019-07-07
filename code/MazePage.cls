@@ -25,8 +25,8 @@ Attribute VB_Exposed = False
 Public Sub LoadMap()
     Dim w As Long, h As Long, Image As Long, Color As Long
 
-    Page.Res.newImage App.path & "\assets\ui\maze.png"
-    Page.Res.newImage App.path & "\assets\ui\shadow.png", GW, GH
+    Page.Res.newImage App.Path & "\assets\ui\maze.png"
+    Page.Res.newImage App.Path & "\assets\ui\shadow.png", GW, GH
     Image = Page.Res.ResourceImageHandle(Page.Res.GetImage("maze.png"))
     GdipGetImageWidth Image, w: GdipGetImageHeight Image, h
     
@@ -34,17 +34,17 @@ Public Sub LoadMap()
     CoverDC = CreateCDC(w * 90, h * 90 + 90)
     
     ReDim Map(w + 1, h + 2)
-    For Y = 0 To h
-        For X = 0 To w
-            GdipBitmapGetPixel Image, X, Y, Color
-            If Color = 0 Then Map(X, Y + 1) = Page.Res.GetImage("alpha.png")
-            If Color = argb(255, 255, 255, 255) Then Map(X, Y + 1) = Page.Res.GetImage("white.png")
-            If Color = argb(255, 153, 204, 255) Then Map(X, Y + 1) = Page.Res.GetImage("blue.png")
-            If Color = argb(255, 255, 153, 51) Then Map(X, Y + 1) = Page.Res.GetImage("orange.png")
-            If Color = argb(255, 0, 255, 0) Then Map(X, Y + 1) = Page.Res.GetImage("green.png")
-            If Color = argb(255, 0, 0, 0) Then Map(X, Y + 1) = Page.Res.GetImage("black.png")
-            If Color = argb(255, 0, 255, 255) Then Map(X, Y + 1) = Page.Res.GetImage("alpha.png"): StartX = X: StartY = Y + 1
-            If Color = argb(255, 255, 0, 0) Then Map(X, Y + 1) = Page.Res.GetImage("alpha.png"): EndX = X: EndY = Y + 1
+    For y = 0 To h
+        For x = 0 To w
+            GdipBitmapGetPixel Image, x, y, Color
+            If Color = 0 Then Map(x, y + 1) = Page.Res.GetImage("alpha.png")
+            If Color = argb(255, 255, 255, 255) Then Map(x, y + 1) = Page.Res.GetImage("white.png")
+            If Color = argb(255, 153, 204, 255) Then Map(x, y + 1) = Page.Res.GetImage("blue.png")
+            If Color = argb(255, 255, 153, 51) Then Map(x, y + 1) = Page.Res.GetImage("orange.png")
+            If Color = argb(255, 0, 255, 0) Then Map(x, y + 1) = Page.Res.GetImage("green.png")
+            If Color = argb(255, 0, 0, 0) Then Map(x, y + 1) = Page.Res.GetImage("black.png")
+            If Color = argb(255, 0, 255, 255) Then Map(x, y + 1) = Page.Res.GetImage("alpha.png"): StartX = x: StartY = y + 1
+            If Color = argb(255, 255, 0, 0) Then Map(x, y + 1) = Page.Res.GetImage("alpha.png"): EndX = x: EndY = y + 1
         Next
     Next
     PX = StartX: PY = StartY
@@ -52,16 +52,16 @@ Public Sub LoadMap()
     Dim ODC As Long
     ODC = Page.CDC
     Page.CDC = MapDC
-    For X = 0 To w
-        For Y = 1 To h + 1
-            Page.DrawImage Map(2, 2), (X - 0) * 90, (Y - 0) * 90, Alpha:=1
-            If Page.Res.ImgSize(Map(X, Y), imgGetHeight) = 180 Then
-                Page.DrawImage Map(X, Y), (X - 0) * 90, (Y - 0) * 90, cy:=90, ch:=90, Alpha:=1
+    For x = 0 To w
+        For y = 1 To h + 1
+            Page.DrawImage Map(2, 2), (x - 0) * 90, (y - 0) * 90, Alpha:=1
+            If Page.Res.ImgSize(Map(x, y), imgGetHeight) = 180 Then
+                Page.DrawImage Map(x, y), (x - 0) * 90, (y - 0) * 90, cy:=90, ch:=90, Alpha:=1
                 Page.CDC = CoverDC
-                Page.DrawImage Map(X, Y), (X - 0) * 90, (Y - 0) * 90 - 90, cy:=0, ch:=90, Alpha:=1
+                Page.DrawImage Map(x, y), (x - 0) * 90, (y - 0) * 90 - 90, cy:=0, ch:=90, Alpha:=1
                 Page.CDC = MapDC
             Else
-                Page.DrawImage Map(X, Y), (X - 0) * 90, (Y - 0) * 90, Alpha:=1
+                Page.DrawImage Map(x, y), (x - 0) * 90, (y - 0) * 90, Alpha:=1
             End If
         Next
     Next
@@ -152,15 +152,15 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, Msg As String)
+Public Sub AnimationMsg(id As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
     '页面进入事件
-    BGM.Create App.path & "\music\bgm\OST 4 - Garden Party.mp3"
+    BGM.Create App.Path & "\music\bgm\OST 4 - Garden Party.mp3"
     BGM.rate = 0.8
     BGM.Play
-    BGS.Create App.path & "\music\bgs\Nightforest.mp3"
+    BGS.Create App.Path & "\music\bgs\Nightforest.mp3"
     BGS.Play
 End Sub
 Public Sub Leave()
@@ -172,7 +172,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(ID As Integer)
+Public Sub AnimationDone(id As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub
@@ -181,7 +181,8 @@ Private Sub Class_Initialize()
     Set Page = New GPage
     Page.Create Me
     '导入游戏资源
-    Page.Res.NewImages App.path & "\assets\maze"
+    Page.Res.NoLoadCrash = True
+    Page.Res.NewImages App.Path & "\assets\maze"
     '创建页面
     ECore.Add Page, "MazePage"
     

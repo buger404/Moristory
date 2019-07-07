@@ -56,7 +56,7 @@ Private Sub Form_Load()
     '创建存档（可选）
     Set ESave = New GSaving
     ESave.Create "Moristory.TIMELINE", "kj" & Val(Me.Visible) & "Ehsd" & Val(VB.Screen.FontCount <> 0) & "Cdfd" & Right(Left("54B89", 3), 1) & "3fdkg5" & UCase("d") & "gsA6D1F7305BEjAC8738C" & CLng("&HE2") & "kjgds"
-    ESave.PutData "PART", "3"
+    ESave.PutData "PART", "4.5"
     ESave.PutData "TIMELINE", "1"
 
     '开始显示
@@ -67,7 +67,7 @@ Private Sub Form_Load()
     Set BGS = New GMusic
     Set SE = New GMusicList
     SE.HotLoad = True
-    SE.Create App.path & "\music\se"
+    SE.Create App.Path & "\music\se"
     BGS.Volume = 0.3
     
     '在此处初始化你的页面
@@ -78,6 +78,7 @@ Private Sub Form_Load()
         Set MainPage = New MainPage
         Set NovelPage = New NovelPage
         Set MazePage = New MazePage
+        Set BattlePage = New BattlePage
         MazePage.LoadMap
     '=============================================
 
@@ -85,22 +86,22 @@ Private Sub Form_Load()
     EC.ActivePage = "MainPage"
 End Sub
 
-Private Sub Form_MouseDown(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Form_MouseDown(button As Integer, Shift As Integer, x As Single, y As Single)
     '发送鼠标信息
-    UpdateMouse X, Y, 1, Button
+    UpdateMouse x, y, 1, button
 End Sub
 
-Private Sub Form_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Form_MouseMove(button As Integer, Shift As Integer, x As Single, y As Single)
     '发送鼠标信息
     If Mouse.state = 0 Then
-        UpdateMouse X, Y, 0, Button
+        UpdateMouse x, y, 0, button
     Else
-        Mouse.X = X: Mouse.Y = Y
+        Mouse.x = x: Mouse.y = y
     End If
 End Sub
-Private Sub Form_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Form_MouseUp(button As Integer, Shift As Integer, x As Single, y As Single)
     '发送鼠标信息
-    UpdateMouse X, Y, 2, Button
+    UpdateMouse x, y, 2, button
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)

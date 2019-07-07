@@ -1,0 +1,25 @@
+name attackbg|position 1|tick 41
+:Channel Default
+   {
+      HitThunder_001.png(1,1.00,0,-7)
+   }
+   {
+      HitThunder_002.png(1,1.00,0,-7)
+   }
+   {
+      HitThunder_003.png(1,1.00,0,-7)
+   }
+   {
+      HitThunder_004.png(1,1.00,0,-7)
+   }
+   {
+      HitThunder_005.png(1,1.00,0,-7)
+   }
+   {
+      HitThunder_006.png(1,1.00,0,-7)
+   }
+:Channel Reserve
+   {stay|msg "ok"
+      errrrr4rr4rrrrr4r4rrrrrrrrr404.png(1,0,0,0)
+   }
+

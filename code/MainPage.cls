@@ -25,8 +25,8 @@ Public Sub Update()
         NovelPage.ReadNovel
         ECore.NewTransform transFadeIn, , "NovelPage"
     End If
-    If Page.ShowColorButton(0, GW / 2 - 50 + 100, GH / 2 - 30, 100, 60, "Maze", argb(255, 255, 255, 255), argb(255, 0, 176, 240), argb(255, 0, 196, 255), size:=18) = 3 Then
-        ECore.NewTransform transFadeIn, , "MazePage"
+    If Page.ShowColorButton(0, GW / 2 - 50 + 100, GH / 2 - 30, 100, 60, "Battle", argb(255, 255, 255, 255), argb(255, 0, 176, 240), argb(255, 0, 196, 255), size:=18) = 3 Then
+        ECore.NewTransform transFadeIn, , "BattlePage"
         MazePage.LoadMap
     End If
     
@@ -59,7 +59,7 @@ Private Sub Class_Initialize()
     Set Page = New GPage
     Page.Create Me
     '导入游戏资源
-    Page.Res.NewImages App.path & "\assets"
+    Page.Res.NewImages App.Path & "\assets"
     '创建页面
     ECore.Add Page, "MainPage"
     

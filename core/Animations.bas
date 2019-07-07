@@ -13,7 +13,7 @@ Attribute VB_Name = "Animations"
         x As Long
         y As Long
         size As Single
-        alpha As Single
+        Alpha As Single
     End Type
     Public Type EAniTickFrame
         aframes() As EAniFrame
@@ -36,15 +36,16 @@ Attribute VB_Name = "Animations"
         position As PosAlign
     End Type
 '==========================================================================
-    Public Function LoadAnimation(path As String) As EAnimation
+    Public Function LoadAnimation(Path As String) As EAnimation
         Dim temp As String, ani As EAnimation, temp2() As String, temp3() As String
         Dim framepos As Long
         ReDim ani.channel(0) '初始化
         
-        Open path For Input As #1
+        Open Path For Input As #1
         Do While Not EOF(1)
             Line Input #1, temp
             temp = Trim(temp)
+            If temp = "" Then GoTo AirFile
             '设置动画信息
             If ani.name = "" Then
                 temp2 = Split(temp, "|")
@@ -99,7 +100,7 @@ Attribute VB_Name = "Animations"
                     For i = 0 To UBound(temp2)
                         temp3 = Split(Right(Split(temp2(i), "(")(1), Len(temp2(i)) - 1), ",")
                         .aframes(i).size = Val(temp3(0))
-                        .aframes(i).alpha = Val(temp3(1))
+                        .aframes(i).Alpha = Val(temp3(1))
                         .aframes(i).x = Val(temp3(2))
                         .aframes(i).y = Val(temp3(3))
                         .aframes(i).pic = Split(temp2(i), "(")(0)
@@ -122,8 +123,8 @@ Attribute VB_Name = "Animations"
             framepos = framepos + 1
 DoWithDone:
         Loop
+AirFile:
         Close #1
-        
         LoadAnimation = ani
     End Function
     

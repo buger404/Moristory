@@ -70,7 +70,7 @@ Attribute VB_Name = "GCore"
     End Type
     Public Type AssetsTree
         files() As GMem
-        path As String
+        Path As String
         arg1 As Variant
         arg2 As Variant
     End Type
@@ -104,7 +104,7 @@ Attribute VB_Name = "GCore"
     Public FPSWarn As Long
     Public EmeraldInstalled As Boolean
     Public BassInstalled As Boolean
-    Public Const Version As Long = 19070608      'hhhhhhhhxxxhhhhhhhhffff
+    Public Const Version As Long = 19070706      'hhhhhdfgdfhhhxxxhhhhhhhhffff
     Public TextHandle As Long, WaitChr As String
     
     Public AssetsTrees() As AssetsTree
@@ -115,7 +115,7 @@ Attribute VB_Name = "GCore"
     Private Declare Function GetPrivateProfileString Lib "kernel32" Alias "GetPrivateProfileStringW" (ByVal lpApplicationName As Long, ByVal lpKeyName As Long, ByVal lpDefault As Long, ByVal lpReturnedString As Long, ByVal nSize As Long, ByVal lpFileName As Long) As Long
     Public Function IsExitAFile(filespec As String) As Boolean
             Dim FSO As Object
-            Set FSO = CreateObject("Scripting.FileSystemObject")
+            Set FSO = PoolCreateObject("Scripting.FileSystemObject")
             If FSO.fileExists(filespec) Then
             IsExitAFile = True
             Else: IsExitAFile = False
@@ -134,7 +134,7 @@ Attribute VB_Name = "GCore"
         ReadINI = strBuf
     End Function
     Public Sub OutPutDebug(Str As String)
-        Open App.path & "\debug.txt" For Append As #1
+        Open App.Path & "\debug.txt" For Append As #1
         Print #1, Now & "    " & Str
         Close #1
     End Sub
@@ -171,6 +171,8 @@ Attribute VB_Name = "GCore"
     Public Sub StartEmerald(Hwnd As Long, w As Long, h As Long)
         ReDim ColorLists(0)
             
+        Call InitPool
+        
         Dim strComputer, objWMIService, colItems, objItem, strOSversion As String
         strComputer = "."
         Set objWMIService = GetObject("winmgmts:\\" & strComputer & "\root\cimv2")
@@ -236,8 +238,10 @@ Attribute VB_Name = "GCore"
         End If
         
         If App.LogMode <> 0 Then SetWindowLongA GHwnd, GWL_WNDPROC, Wndproc
-        If Not (ECore Is Nothing) Then ECore.Dispose
-        If Not (EF Is Nothing) Then EF.Dispose
+        'If Not (ECore Is Nothing) Then ECore.Dispose
+        'If Not (EF Is Nothing) Then EF.Dispose
+        Call DestroyPool
+        
         TerminateGDIPlus
         If BassInstalled Then BASS_Free
     End Sub
@@ -277,7 +281,7 @@ sth:
         
         GetWinNTVersion = Left(strOSversion, 3)
     End Function
-    Public Sub BlurTo(DC As Long, srcDC As Long, buffWin As Form, Optional radius As Long = 60)
+    Public Sub BlurTo(DC As Long, srcDC As Long, buffWin As Form, Optional Radius As Long = 60)
         Dim i As Long, g As Long, e As Long, b As BlurParams, w As Long, h As Long
         '粘贴到缓冲窗口
         buffWin.AutoRedraw = True
@@ -287,46 +291,28 @@ sth:
         GdipCreateBitmapFromHBITMAP buffWin.Image.handle, buffWin.Image.hpal, i
         
         '模糊操作
-        GdipCreateEffect2 GdipEffectType.Blur, e: b.radius = radius: GdipSetEffectParameters e, b, LenB(b)
+        PoolCreateEffect2 GdipEffectType.Blur, e: b.Radius = Radius: GdipSetEffectParameters e, b, LenB(b)
         GdipGetImageWidth i, w: GdipGetImageHeight i, h
         GdipBitmapApplyEffect i, e, NewRectL(0, 0, w, h), 0, 0, 0
         
         '画~
-        GdipCreateFromHDC DC, g
+        PoolCreateFromHdc DC, g
         GdipDrawImage g, i, 0, 0
-        GdipDisposeImage i: GdipDeleteGraphics g: GdipDeleteEffect e '垃圾处理
+        PoolDisposeImage i: PoolDeleteGraphics g: PoolDeleteEffect e '垃圾处理
         buffWin.AutoRedraw = False
     End Sub
-    Public Sub BlurImg(img As Long, radius As Long)
+    Public Sub BlurImg(img As Long, Radius As Long)
         Dim b As BlurParams, e As Long, w As Long, h As Long
         
         '模糊操作
 
-        GdipCreateEffect2 GdipEffectType.Blur, e: b.radius = radius: GdipSetEffectParameters e, b, LenB(b)
+        PoolCreateEffect2 GdipEffectType.Blur, e: b.Radius = Radius: GdipSetEffectParameters e, b, LenB(b)
         GdipGetImageWidth img, w: GdipGetImageHeight img, h
         GdipBitmapApplyEffect img, e, NewRectL(0, 0, w, h), 0, 0, 0
         
         '画~
-        GdipDeleteEffect e '垃圾处理
+        PoolDeleteEffect e '垃圾处理
     End Sub
-    Public Function CreateCDC(w As Long, h As Long) As Long
-        Dim bm As BITMAPINFOHEADER, DC As Long, DIB As Long
-    
-        With bm
-            .biBitCount = 32
-            .biHeight = h
-            .biWidth = w
-            .biPlanes = 1
-            .biSizeImage = (.biWidth * .biBitCount + 31) / 32 * 4 * .biHeight
-            .biSize = Len(bm)
-        End With
-        
-        DC = CreateCompatibleDC(GDC)
-        DIB = CreateDIBSection(DC, bm, DIB_RGB_COLORS, ByVal 0, 0, 0)
-        DeleteObject SelectObject(DC, DIB)
-        
-        CreateCDC = DC
-    End Function
     Public Sub PaintDC(DC As Long, destDC As Long, Optional x As Long = 0, Optional y As Long = 0, Optional cx As Long = 0, Optional cy As Long = 0, Optional cw, Optional ch, Optional alpha)
         Dim b As BLENDFUNCTION, index As Integer, bl As Long
         
@@ -420,7 +406,7 @@ sth:
             data.PutData "UpdateTime", Now
             
             Dim xmlHttp As Object, Ret As String, Start As Long
-            Set xmlHttp = CreateObject("Microsoft.XMLHTTP")
+            Set xmlHttp = PoolCreateObject("Microsoft.XMLHTTP")
             xmlHttp.Open "GET", "https://raw.githubusercontent.com/Red-Error404/Emerald/master/Version.txt", True
             xmlHttp.send
                          
@@ -457,10 +443,10 @@ sth:
         AssetsTrees(UBound(AssetsTrees)).arg1 = arg1
         AssetsTrees(UBound(AssetsTrees)).arg2 = arg2
     End Function
-    Public Function FindAssetsTree(path As String, arg1 As Variant, arg2 As Variant) As Integer
+    Public Function FindAssetsTree(Path As String, arg1 As Variant, arg2 As Variant) As Integer
         On Error Resume Next
         For i = 1 To UBound(AssetsTrees)
-            If AssetsTrees(i).path = path And AssetsTrees(i).arg1 = arg1 And AssetsTrees(i).arg2 = arg2 Then
+            If AssetsTrees(i).Path = Path And AssetsTrees(i).arg1 = arg1 And AssetsTrees(i).arg2 = arg2 Then
                 If Err.Number <> 0 Then
                     Err.Clear
                 Else
@@ -469,9 +455,9 @@ sth:
             End If
         Next
     End Function
-    Public Function GetAssetsTree(path As String) As AssetsTree
+    Public Function GetAssetsTree(Path As String) As AssetsTree
         For i = 1 To UBound(AssetsTrees)
-            If AssetsTrees(i).path = path Then GetAssetsTree = AssetsTrees(i): Exit For
+            If AssetsTrees(i).Path = Path Then GetAssetsTree = AssetsTrees(i): Exit For
         Next
     End Function
 '========================================================

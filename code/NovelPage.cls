@@ -16,7 +16,7 @@ Attribute VB_Exposed = False
     Dim Page As GPage
     Dim BG As String, FG As String, BGCOLOR As Long
     Dim CuLine As Long, NLines() As String
-    Dim Mode As String, PART As String
+    Dim mode As String, PART As String
     Dim LLineTime As Long
     Dim DisplayText As String
     Dim Title As String
@@ -114,6 +114,10 @@ Exec:
                         CuLine = CuLine + 1
                         ECore.NewTransform transFallDark, 3000, "MazePage"
                         Exit Sub
+                    Case "battle"
+                        CuLine = CuLine + 1
+                        ECore.NewTransform transFallDark, 3000, "BattlePage"
+                        Exit Sub
                 End Select
             Case "***death"
                 SE.Play "Collapse4.mp3"
@@ -126,7 +130,7 @@ Exec:
                 ReDim Ques.Answers(AnswerStep)
                 PaintDC Page.CDC, ODC, 0, 0, Alpha:=1
                 BlurTo BlurDC, GDC, GameWindow
-                Mode = "question"
+                mode = "question"
             Case "timeline"
                 If Params(2) = "head" Then
                     If TimeLine <> Val(Params(1)) Then JumpTimeline = True: GoTo Exec
@@ -165,10 +169,10 @@ Exec:
                 DisplayText = ""
                 ECore.NewTransform
             Case "*bgm"
-                BGM.Create App.path & "\music\bgm\" & Params(1)
+                BGM.Create App.Path & "\music\bgm\" & Params(1)
                 BGM.Play
             Case "*bgs"
-                BGS.Create App.path & "\music\bgs\" & Params(1)
+                BGS.Create App.Path & "\music\bgs\" & Params(1)
                 BGS.Play
             Case "*play"
                 SE.Play Params(1)
@@ -184,7 +188,7 @@ Exec:
                 FG = Params(1)
                 ECore.NewTransform
             Case "*mode"
-                Mode = Params(1)
+                mode = Params(1)
             Case "effect"
                 Select Case Params(1)
                     Case "light"
@@ -226,7 +230,7 @@ Exec:
             End If
             SpeakerName = GetSpeakerName(Speaker)
         Else
-            If Mode <> "scroll" Then
+            If mode <> "scroll" Then
                 AddPos = 1
                 AddingText = NLines(CuLine)
                 If GetStrLine = 3 Then
@@ -246,7 +250,7 @@ Exec:
         End If
     End If
     
-    If Mode = "scroll" Then LLineTime = GetTickCount
+    If mode = "scroll" Then LLineTime = GetTickCount
     
     CuLine = CuLine + 1
     
@@ -260,7 +264,7 @@ Public Sub ReadNovel()
     
     Dim temp As String, text As String
     
-    Open App.path & "\article\PART " & PART & ".mss" For Input As #1
+    Open App.Path & "\article\PART " & PART & ".mss" For Input As #1
     Do While Not EOF(1)
         Line Input #1, temp
         text = text & temp & vbCrLf
@@ -302,7 +306,7 @@ Public Sub DrawQues()
         Page.DrawImage "answerpad.png", GW / 2, GH / 2 - 59 + 170 + i * 70 + pro * 500, Alpha:=IIf(m <> 0, 1, 0.5), pos:=posOnCenter
         Page.Writes (i + 1) & ". " & Ques.Answers(i).Caption, GW / 2 - 200, GH / 2 - 59 + 170 + i * 70 - 12 + pro * 500, 16, argb(200, 27, 27, 27)
         If m = 3 Then
-            Mode = "msg"
+            mode = "msg"
             ECore.NewTransform
             If Ques.Answers(i).JTimeLine <> 0 Then TimeLine = Ques.Answers(i).JTimeLine: ESave.PutData "TIMELINE", TimeLine
             For s = 1 To UBound(Roles)
@@ -336,17 +340,17 @@ Public Sub DrawMsg()
     End If
     pro = Cubic(pro, 0, 1, 1, 1)
     
-    Dim X As Long
-    X = GW / 2
+    Dim x As Long
+    x = GW / 2
     For i = 1 To UBound(Roles)
-        X = X - (Page.Res.ImgSize(Roles(i).name & "-" & Roles(i).Face & ".png", imgGetWidth) + 50) / 2
+        x = x - (Page.Res.ImgSize(Roles(i).name & "-" & Roles(i).Face & ".png", imgGetWidth) + 50) / 2
     Next
     
-    X = X + 30
+    x = x + 30
     
     For i = 1 To UBound(Roles)
-        Page.DrawImage Roles(i).name & "-" & Roles(i).Face & ".png", X, GH + 140 + IIf(Page.Res.ImgSize(Roles(i).name & "-" & Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0), Alpha:=IIf(Speaker <> Roles(i).name And Speaker <> "aside", 0.7, 1), pos:=posOnBottom
-        X = X + (Page.Res.ImgSize(Roles(i).name & "-" & Roles(i).Face & ".png", imgGetWidth) + 50)
+        Page.DrawImage Roles(i).name & "-" & Roles(i).Face & ".png", x, GH + 140 + IIf(Page.Res.ImgSize(Roles(i).name & "-" & Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0), Alpha:=IIf(Speaker <> Roles(i).name And Speaker <> "aside", 0.7, 1), pos:=posOnBottom
+        x = x + (Page.Res.ImgSize(Roles(i).name & "-" & Roles(i).Face & ".png", imgGetWidth) + 50)
     Next
     
     If AddPos <= Len(AddingText) Then
@@ -391,14 +395,14 @@ Public Sub DrawScroll()
     If pro > 1 Then pro = 1
     pro = Cubic(pro, 0, 1, 1, 1)
     
-    Dim Y As Long
-    Y = GH / 2 - (UBound(Lines) - 2) * 50 - 50 * pro
+    Dim y As Long
+    y = GH / 2 - (UBound(Lines) - 2) * 50 - 50 * pro
     For i = 0 To UBound(Lines) - 1
-        Page.Writes Lines(i), GW / 2, Y, 20, argb(IIf(i = UBound(Lines) - 1, pro, 1) * 255, 255, 255, 255), align:=StringAlignmentCenter
-        Y = Y + 50
+        Page.Writes Lines(i), GW / 2, y, 20, argb(IIf(i = UBound(Lines) - 1, pro, 1) * 255, 255, 255, 255), align:=StringAlignmentCenter
+        y = y + 50
     Next
     
-    If GetTickCount - LLineTime >= 5000 Then Call RunNovel
+    If GetTickCount - LLineTime >= 3000 Then Call RunNovel
 End Sub
 Public Sub Update()
     '游戏每一帧的过程（绘制过程请放在此处）
@@ -408,11 +412,11 @@ Public Sub Update()
     If FG <> "" Then Page.DrawImage FG, 0, 0, Alpha:=1
     
     
-    If Mode = "msg" Then
+    If mode = "msg" Then
         Call DrawMsg
-    ElseIf Mode = "scroll" Then
+    ElseIf mode = "scroll" Then
         Call DrawScroll
-    ElseIf Mode = "question" Then
+    ElseIf mode = "question" Then
         Call DrawQues
     End If
     
@@ -423,7 +427,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, Msg As String)
+Public Sub AnimationMsg(id As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -438,7 +442,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(ID As Integer)
+Public Sub AnimationDone(id As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub
@@ -448,14 +452,15 @@ Private Sub Class_Initialize()
     Page.Create Me
     '导入游戏资源
     Page.Res.HotLoad = True
+    Page.Res.NoLoadCrash = True
     
-    Page.Res.NewImages App.path & "\assets\bg", 1000, 740
-    Page.Res.NewImages App.path & "\assets\fg", 1000, 740
-    Page.Res.NewImages App.path & "\assets\ui", 0.68
-    Page.Res.NewImages App.path & "\assets\face"
-    Page.Res.NewImages App.path & "\assets\animation"
+    Page.Res.NewImages App.Path & "\assets\bg", 1000, 740
+    Page.Res.NewImages App.Path & "\assets\fg", 1000, 740
+    Page.Res.NewImages App.Path & "\assets\ui", 0.68
+    Page.Res.NewImages App.Path & "\assets\face"
+    Page.Res.NewImages App.Path & "\assets\animation"
     
-    Page.LoadAnimationsFromDir App.path & "\animation"
+    Page.LoadAnimationsFromDir App.Path & "\animation"
     Page.CreatePlayAnimation "ballon_jing", "ani+ballon_jing", "Default"
     Page.CreatePlayAnimation "ballon_ques", "ani+ballon_ques", "Default"
     Page.CreatePlayAnimation "ballon_love", "ani+ballon_love", "Default"

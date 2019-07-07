@@ -1,0 +1,21 @@
+#这不是你应该看的文件。
+*title\暴风雪中的它
+*bgm\OST 14 - Snowy.mp3
+*bgs\Wind_1_3D_loop.mp3
+*mode\scroll
+*bg\Snowfield.png
+*fg\Snowfieldfg.png
+*bgs\Waterfall_3D_loop.mp3
+放眼望去，只见白茫茫的大地。
+风呼啸着，雪花接二连三地落下。。。
+clear\
+*fg\Cloud.png
+什么也看不见，什么也听不见。
+clear\
+一只白狼面不改色地站立在暴风之中。
+clear\
+。。。
+clear\
+bg\255,255,255
+白色的雪填满了视野。
+*turn\5

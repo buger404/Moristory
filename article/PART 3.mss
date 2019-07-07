@@ -232,6 +232,8 @@ say\aside
 前方竖立着房屋，铺着小路。
 周围种满了许多花草树木，中央的大喷泉闪着光芒。
 say\xx
+face\xx\normal
+face\bm\normal
 “Welcome to <HOME>”
 兮兮微笑着对青说。
 say\me

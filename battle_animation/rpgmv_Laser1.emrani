@@ -1,0 +1,57 @@
+name rpgmv_Laser1|position 1|tick 41
+:Channel Default
+   {
+      Laser1_000.png(1,1.00,29,-169)|Laser1_005.png(1,0.00,3,6)
+      Laser1.mp3(1)
+   }
+   {
+      Laser1_001.png(1,1.00,29,-169)|Laser1_005.png(1,1.00,3,6)
+      Paralyze2.mp3(1)
+   }
+   {
+      Laser1_013.png(1,1.00,3,-109)|Laser1_002.png(1,1.00,29,-169)|Laser1_006.png(1,1.00,3,6)
+      Evasion2.mp3(1)
+   }
+   {
+      Laser1_014.png(1,1.00,3,-109)|Laser1_003.png(1,1.00,29,-169)|Laser1_007.png(1,1.00,3,6)
+   }
+   {
+      Laser1_015.png(1,1.00,3,-109)|Laser1_004.png(1,1.00,29,-169)|Laser1_008.png(1,1.00,3,6)
+   }
+   {
+      Laser1_016.png(1,1.00,3,-109)|Laser1_002.png(1,1.00,29,-169)|Laser1_009.png(1,1.00,3,6)
+      Evasion2.mp3(1)
+   }
+   {
+      Laser1_017.png(1,1.00,3,-109)|Laser1_003.png(1,1.00,29,-169)|Laser1_010.png(1,1.00,3,6)|Laser1_005.png(1,1.00,3,9)
+   }
+   {
+      Laser1_018.png(1,1.00,3,-109)|Laser1_004.png(1,1.00,29,-169)|Laser1_011.png(1,1.00,3,6)|Laser1_006.png(1,1.00,3,9)
+   }
+   {
+      Laser1_019.png(1,1.00,3,-109)|Laser1_002.png(1,1.00,29,-169)|Laser1_012.png(1,1.00,3,6)|Laser1_007.png(1,1.00,3,9)
+      Evasion2.mp3(1)
+   }
+   {
+      Laser1_020.png(1,1.00,3,-109)|Laser1_003.png(1,1.00,29,-169)|Laser1_008.png(1,1.00,3,9)
+   }
+   {
+      Laser1_017.png(1,1.00,3,-109)|Laser1_004.png(1,1.00,29,-169)|Laser1_009.png(1,1.00,3,9)
+   }
+   {
+      Laser1_018.png(1,1.00,3,-109)|Laser1_002.png(1,1.00,29,-169)|Laser1_010.png(1,1.00,3,9)
+   }
+   {
+      Laser1_019.png(1,0.74,3,-109)|Laser1_003.png(1,0.74,29,-169)|Laser1_011.png(1,0.74,3,9)
+   }
+   {
+      Laser1_020.png(1,0.39,3,-109)|Laser1_004.png(1,0.39,29,-169)|Laser1_012.png(1,0.39,3,9)
+   }
+   {stay|msg "ok"
+      errrrr4rr4rrrrr4r4rrrrrrrrr404.png(1,0,0,0)
+   }
+:Channel Reserve
+   {stay|msg "ok"
+      errrrr4rr4rrrrr4r4rrrrrrrrr404.png(1,0,0,0)
+   }
+
