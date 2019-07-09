@@ -21,6 +21,7 @@ Attribute VB_Exposed = False
     Dim MaxHp As Long, Hp As Long
     Dim LastHp As Long
     Dim ATK As Long, UATK As Long, ATKKind As Integer
+    Dim ATKBuff As Long
 '======================================
 Public Sub UAttack()
 
@@ -48,7 +49,7 @@ Public Sub UAttack()
     ECore.NewTransform
 End Sub
 Public Sub Update()
-    '游戏每一帧的过程（绘制过程请放在此处）
+    '每一帧的过程（绘制过程请放在此处）
     
     Page.Clear '清空画布
 
@@ -57,20 +58,23 @@ Public Sub Update()
     
     Dim SinBuff As Long
     
-    SinBuff = 500 + IIf(Step = 2, 0, Sin((GetTickCount / 400) + 1) * IIf(Step = 1, 170, 80))
-    Page.DrawImage "kx1-normal.png", GW / 2 - 480, SinBuff, Alpha:=1, pos:=posOnCenter
+    SinBuff = 300 + IIf(Step = 2, ATKBuff - 300, Sin((GetTickCount / 400) + 1) * IIf(Step = 1, 170 * (1 + (1 - UHP / UMaxHp) / 2), 80))
+    Page.DrawImage "kx1-normal.png", GW / 2 + 3, SinBuff + 2 - 2, Alpha:=1, Pos:=posOnCenter
     For i = 0 To 10
-        Page.DrawImage "kx1-normal.png", GW / 2 - 480, 500 + IIf(Step = 2, 0, Sin((GetTickCount / 400) + i / 10) * IIf(Step = 1, 170 * (1 + (1 - UHP / UMaxHp) / 2.5), 80)), Alpha:=0.1, pos:=posOnCenter
+        Page.DrawImage "kx1-normal.png", GW / 2 + 3, 300 + IIf(Step = 2, ATKBuff - 300, Sin((GetTickCount / 400) + i / 10) * IIf(Step = 1, 170 * (1 + (1 - UHP / UMaxHp) / 2), 80)), Alpha:=0.1, Pos:=posOnCenter
     Next
     
     Dim pro As Single
     
     If Step = 2 Then
+        Page.PaintLine GW / 2 - 50, GH / 2, GW / 2 + 50, GH / 2, argb(255, 255, 0, 0), 3
+        Page.PaintLine GW / 2, GH / 2 - 50, GW / 2, GH / 2 + 50, argb(255, 255, 0, 0), 3
+        
         If ATK <> 0 Then
             Page.DrawAnimation "青铜炮", GW / 2, GH / 2
             If GetTickCount Mod 300 < 150 Then
                 Page.Writes "-" & ATK, GW / 2, GH / 2, 48, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
-                If ATK > 180 Then Page.Writes "EXCELLENT !", GW / 2, GH / 2 + 70, 48, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
+                If ATK > 163 Then Page.Writes "EXCELLENT !", GW / 2, GH / 2 + 70, 48, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
             End If
         Else
             If GetTickCount Mod 300 < 150 Then Page.Writes "MISS", GW / 2, GH / 2, 48, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
@@ -125,7 +129,7 @@ Public Sub Update()
         pro = Cubic(pro, 0, 1, 1, 1)
         If pro > 1 Then pro = 1
         
-        Page.Paint 2, GW / 2, 85, 600 - 5, 30 - 2, argb(255, 64, 64, 64), 40, pos:=posOnCenter
+        Page.Paint 2, GW / 2, 85, 600 - 5, 30 - 2, argb(255, 64, 64, 64), 40, Pos:=posOnCenter
         Page.Paint 2, GW / 2 - 300, 85 - 30 / 2, (UHP + ATK - ATK * pro) / UMaxHp * 600, 30, argb(255, 254, 84, 57), 40
         
         Page.Writes UHP & " / " & UMaxHp, GW / 2, 85 - 14, 20, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
@@ -133,16 +137,16 @@ Public Sub Update()
     
     If Step = 0 Then
         Dim m As Integer
-        Page.DrawImage "atk0.png", GW / 2 - 100, GH - 150, Alpha:=0, pos:=posOnCenter
+        Page.DrawImage "atk0.png", GW / 2 - 100, GH - 150, Alpha:=0, Pos:=posOnCenter
         m = CheckMouse2
         If m >= MButtonState.mMouseIn Then Page.DrawAnimation "attackbg", GW / 2 - 100, GH - 150
-        Page.DrawImage "atk" & IIf(m >= mMouseIn, 1, 0) & ".png", GW / 2 - 100, GH - 150, Alpha:=1, pos:=posOnCenter
+        Page.DrawImage "atk" & IIf(m >= mMouseIn, 1, 0) & ".png", GW / 2 - 100, GH - 150, Alpha:=1, Pos:=posOnCenter
         If m = MButtonState.mMouseUp Then SE.Play "Cursor.mp3": Step = 1: ECore.NewTransform
         
-        Page.DrawImage "def0.png", GW / 2 + 100, GH - 150, Alpha:=1, pos:=posOnCenter
+        Page.DrawImage "def0.png", GW / 2 + 100, GH - 150, Alpha:=1, Pos:=posOnCenter
         m = CheckMouse2
         If m >= MButtonState.mMouseIn Then Page.DrawAnimation "attackbg", GW / 2 + 100, GH - 150
-        Page.DrawImage "def" & IIf(m >= mMouseIn, 1, 0) & ".png", GW / 2 + 100, GH - 150, Alpha:=1, pos:=posOnCenter
+        Page.DrawImage "def" & IIf(m >= mMouseIn, 1, 0) & ".png", GW / 2 + 100, GH - 150, Alpha:=1, Pos:=posOnCenter
         If m = MButtonState.mMouseUp Then
             UATK = (Hp - LastHp)
             Hp = LastHp
@@ -161,14 +165,20 @@ Public Sub Update()
         If Mouse.button = 1 And Mouse.state = 2 Then
             ATK = 0
             Randomize
-            ATK = (Abs(SinBuff - 382 - GH / 2))
-            ATK = (ATK) / (80) * 70 * (Rnd * 0.3 + 1)
+            ATK = (Abs(SinBuff - GH / 2))
+            Debug.Print Now, "pitch", ATK
+            ATK = Cubic((100 - ATK) / (100), 0, 1, 1, 1) * 150 * (Rnd * 0.3 + 1)
+            ATKBuff = SinBuff
             If ATK < 0 Then ATK = 0
             If ATK > 400 Then ATK = 0
             UHP = UHP - ATK
             Mouse.state = 0: Mouse.button = 0
             Page.SwitchChannel "青铜炮", "Default"
-            SE.Play "Magic1.mp3"
+            If ATK = 0 Then
+                SE.Play "Miss.mp3"
+            Else
+                SE.Play "Magic1.mp3"
+            End If
             RoundTime = GetTickCount
             ECore.NewTransform transHighLight, 100
             Step = 2
@@ -187,6 +197,7 @@ Public Sub Update()
         Step = 0: ECore.NewTransform transFallDark, 2000
     End If
     If UHP <= 500 And Step = 0 Then
+        SE.Play "Applause1.mp3"
         NovelPage.RunNovel
         ECore.NewTransform transHighLight, 3000, "NovelPage"
     End If
@@ -195,7 +206,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(id As String, msg As String)
+Public Sub AnimationMsg(ID As String, msg As String)
     '动画消息接收
    ' If id = "青铜炮" And msg = "ok" Then
   '      Step = 0
@@ -218,7 +229,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(id As Integer)
+Public Sub AnimationDone(ID As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

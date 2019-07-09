@@ -14,6 +14,8 @@ Attribute VB_Exposed = False
 '======================================
 '   页面绘制器
     Dim Page As GPage
+    Dim ATime1 As Long, AIndex1 As Long, AStep1 As Long
+    Dim ATime2 As Long, AIndex2 As Long, AStep2 As Long
 '======================================
 
 Public Sub Update()
@@ -21,16 +23,63 @@ Public Sub Update()
     
     Page.Clear '清空画布
 
-    If Page.ShowColorButton(0, GW / 2 - 50 - 100, GH / 2 - 30, 100, 60, IIf(ESave.GetData("HUsh") = "冰棍", "END", "START"), argb(255, 255, 255, 255), argb(255, 0, 176, 240), argb(255, 0, 196, 255), size:=18) = 3 Then
+    Page.DrawImage "logo.png", 50, 50, Alpha:=1
+    Page.Writes "PART 4  xxx", 85, 133, 18, argb(255, 168, 168, 168)
+    Page.Writes "MORISTORY PREVIEW VERSION 708 POWERED BY EMERALD , MADE BY ERROR404 (QQ 1361778219) .", GW / 2, GH - 43, 16, argb(255, 168, 168, 168), align:=StringAlignmentCenter
+    Page.Writes "游戏中所有音乐，音效和部分图片资源，均从网络免费正规渠道获取。", GW / 2, GH - 73, 16, argb(255, 168, 168, 168), align:=StringAlignmentCenter
+    Dim m As Long
+    
+    Page.DrawImage "continue" & AIndex1 & ".png", 70, 200, Alpha:=1
+    m = CheckMouse2
+    If m >= mMouseIn And AStep1 = 0 And AIndex1 = 0 Then
+        AStep1 = 1: ATime1 = GetTickCount
+    ElseIf m <= mMouseOut And AStep1 = 0 And AIndex1 = 8 Then
+        AStep1 = -1: ATime1 = GetTickCount
+    End If
+    If m = mMouseUp Then
+        NovelPage.ReadSave
         NovelPage.ReadNovel
         ECore.NewTransform transFadeIn, , "NovelPage"
     End If
-    If Page.ShowColorButton(0, GW / 2 - 50 + 100, GH / 2 - 30, 100, 60, "Battle", argb(255, 255, 255, 255), argb(255, 0, 176, 240), argb(255, 0, 196, 255), size:=18) = 3 Then
-        ECore.NewTransform transFadeIn, , "BattlePage"
-        MazePage.LoadMap
+    If GetTickCount - ATime1 >= 41 And AStep1 <> 0 Then
+        AIndex1 = AIndex1 + AStep1
+        If AIndex1 = 8 Then AStep1 = 0
+        If AIndex1 = 0 Then AStep1 = 0
     End If
     
+    Page.DrawImage "timeline" & AIndex2 & ".png", 70, 290, Alpha:=1
+    If CheckMouse2 >= mMouseIn And AStep2 = 0 And AIndex2 = 0 Then
+        AStep2 = 1: ATime2 = GetTickCount
+    ElseIf CheckMouse2 <= mMouseOut And AStep2 = 0 And AIndex2 = 10 Then
+        AStep2 = -1: ATime2 = GetTickCount
+    End If
+    If GetTickCount - ATime2 >= 41 And AStep2 <> 0 Then
+        AIndex2 = AIndex2 + AStep2
+        If AIndex2 = 10 Then AStep2 = 0
+        If AIndex2 = 0 Then AStep2 = 0
+    End If
+    
+    
+    If Page.ShowColorButton(0, GW / 2 - 50 - 100, GH / 2 - 30, 100, 60, "Snowman", argb(255, 255, 255, 255), argb(255, 0, 176, 240), argb(255, 0, 196, 255), size:=18) = 3 Then
+        ECore.NewTransform transFadeIn, , "SnowmanPage"
+    End If
+    If Page.ShowColorButton(0, GW / 2 - 50 + 100, GH / 2 - 30, 100, 60, "TicTacToe", argb(255, 255, 255, 255), argb(255, 0, 176, 240), argb(255, 0, 196, 255), size:=18) = 3 Then
+        ECore.NewTransform transFadeIn, , "TicTacToePage"
+    End If
+    If Page.ShowColorButton(0, GW / 2 - 50 + 100, GH / 2 + 60, 100, 60, "Maze", argb(255, 255, 255, 255), argb(255, 0, 176, 240), argb(255, 0, 196, 255), size:=18) = 3 Then
+        ECore.NewTransform transFadeIn, , "MazePage"
+    End If
+    If Page.ShowColorButton(0, GW / 2 - 50 - 100, GH / 2 + 60, 100, 60, "BXBattle", argb(255, 255, 255, 255), argb(255, 0, 176, 240), argb(255, 0, 196, 255), size:=18) = 3 Then
+        ECore.NewTransform transFadeIn, , "BXBattlePage"
+    End If
+    
+    If ESave.GetData("PART") = "" Then
+        NovelPage.ReadSave
+        NovelPage.ReadNovel
+        ECore.NewTransform transFadeIn, , "NovelPage"
+    End If
 End Sub
+
 Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
@@ -59,7 +108,8 @@ Private Sub Class_Initialize()
     Set Page = New GPage
     Page.Create Me
     '导入游戏资源
-    Page.Res.NewImages App.Path & "\assets"
+    Page.Res.HotLoad = True
+    Page.Res.NewImages App.Path & "\assets\ui", 0.5
     '创建页面
     ECore.Add Page, "MainPage"
     

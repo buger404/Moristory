@@ -321,7 +321,7 @@ say\aside
 眼前的花丛中浮出一块石板，兮兮也跟着从花丛里冒了出来。
 say\xx
 “好啦。开始我们的考核吧！”
-（插入井字棋）
+go\chess
 say\aside
 *bgm\OST 9 - Garden Party.mp3
 两人对战了许久，经历了不少死局后，终于分出了胜负。

@@ -159,6 +159,7 @@ say\me
 “嗯！”
 bg\0,0,0
 effect\dark
+*save\
 say\aside
 黑嘴带着它走向黑暗之中。
 say\me
@@ -474,6 +475,7 @@ effect\light
 bg\255,255,255
 *bgs\
 *play\Item.mp3
+*save\
 “圣光领域！”
 周围突然变成了一片亮眼的白色。
 ++

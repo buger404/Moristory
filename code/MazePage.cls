@@ -21,6 +21,7 @@ Attribute VB_Exposed = False
     Dim StartX As Long, StartY As Long, EndX As Long, EndY As Long
     Dim XRemain As Single, YRemain As Single
     Dim MapDC As Long, CoverDC As Long
+    Dim Direction As Long
 '======================================
 Public Sub LoadMap()
     Dim w As Long, h As Long, Image As Long, Color As Long
@@ -88,9 +89,41 @@ Public Sub Update()
     If pro < 0 Then pro = 0
     If pro > 1 Then pro = 1
     
+    Dim Walking As Boolean
+    
+    If XRemain <> 0 Then
+        If Abs(XRemain) < 0.1 Then
+            For i = 0 To 4
+                FX(i) = FX(i + 1): FY(i) = FY(i + 1)
+            Next
+            XRemain = 0: PX = Round(PX)
+        Else
+            PX = PX + IIf(XRemain < 0, -0.05, 0.05)
+            XRemain = XRemain - IIf(XRemain < 0, -0.05, 0.05)
+            If FollowStep <= 50 Then FollowStep = FollowStep + 1
+            If FollowStep >= 50 Then FX(5) = PX: FY(5) = PY
+            Walking = True
+        End If
+    End If
+    If YRemain <> 0 Then
+        If Abs(YRemain) < 0.1 Then
+            For i = 0 To 4
+                FX(i) = FX(i + 1): FY(i) = FY(i + 1)
+            Next
+            YRemain = 0: PY = Round(PY)
+        Else
+            PY = PY + IIf(YRemain < 0, -0.05, 0.05)
+            YRemain = YRemain - IIf(YRemain < 0, -0.05, 0.05)
+            If FollowStep <= 50 Then FollowStep = FollowStep + 1
+            If FollowStep >= 50 Then FX(5) = PX: FY(5) = PY
+            Walking = True
+        End If
+    End If
+    
     PaintDC MapDC, Page.CDC, IIf(cx < 0, -cx, 0), IIf(cy < 0, -cy, 0), IIf(cx >= 0, cx, 0), IIf(cy >= 0, cy, 0), w, h, 1
     Page.DrawImage "darkssr.png", (DarkX - 0) * 90 - cx, (DarkY - 0) * 90 - cy, Alpha:=1 - pro * 4.6
-    Page.Paint 1, GW / 2 - 45, GH / 2 - 45, 90, 90, argb(255, 255, 255, 255)
+    Page.DrawImage "qing" & IIf(Walking, IIf(GetTickCount Mod 300 < 150, Direction, Direction + 2), Direction + 1) & ".png", GW / 2 - 45, GH / 2 - 45, Alpha:=1
+    'Page.Paint 1, GW / 2 - 45, GH / 2 - 45, 90, 90, argb(255, 255, 255, 255)
     PaintDC CoverDC, Page.CDC, IIf(cx < 0, -cx, 0), IIf(cy < 0, -cy, 0), IIf(cx >= 0, cx, 0), IIf(cy >= 0, cy, 0), w, h, 1
     
     Page.DrawImage "shadow.png", 0, 0, Alpha:=1 - pro * 1
@@ -107,43 +140,16 @@ Public Sub Update()
     Dim HuaIndex As Integer
     HuaIndex = Page.Res.GetImage("black.png")
     
-    If XRemain <> 0 Then
-        If Abs(XRemain) < 0.1 Then
-            For i = 0 To 4
-                FX(i) = FX(i + 1): FY(i) = FY(i + 1)
-            Next
-            XRemain = 0: PX = Round(PX)
-        Else
-            PX = PX + IIf(XRemain < 0, -0.1, 0.1)
-            XRemain = XRemain - IIf(XRemain < 0, -0.1, 0.1)
-            If FollowStep <= 50 Then FollowStep = FollowStep + 1
-            If FollowStep >= 50 Then FX(5) = PX: FY(5) = PY
-        End If
-    End If
-    If YRemain <> 0 Then
-        If Abs(YRemain) < 0.1 Then
-            For i = 0 To 4
-                FX(i) = FX(i + 1): FY(i) = FY(i + 1)
-            Next
-            YRemain = 0: PY = Round(PY)
-        Else
-            PY = PY + IIf(YRemain < 0, -0.1, 0.1)
-            YRemain = YRemain - IIf(YRemain < 0, -0.1, 0.1)
-            If FollowStep <= 50 Then FollowStep = FollowStep + 1
-            If FollowStep >= 50 Then FX(5) = PX: FY(5) = PY
-        End If
-    End If
-    
     DarkX = IIf(Abs(PX - FX(0)) < 2 And pro = 0, 0, FX(0)): DarkY = IIf(Abs(PY - FY(0)) < 2 And pro = 0, 0, FY(0))
     If pro > 0 Then
         DarkX = PX - 5
         DarkY = PY
     End If
     
-    If IsKeyPress(VK_UP) And Map(Round(PX), Round(PY - 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then YRemain = -1
-    If IsKeyPress(VK_DOWN) And Map(Round(PX), Round(PY + 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then YRemain = 1
-    If IsKeyPress(VK_LEFT) And Map(Round(PX - 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then XRemain = -1
-    If IsKeyPress(VK_RIGHT) And Map(Round(PX + 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then XRemain = 1
+    If IsKeyPress(VK_UP) And Map(Round(PX), Round(PY - 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then YRemain = -1: Direction = 0
+    If IsKeyPress(VK_DOWN) And Map(Round(PX), Round(PY + 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then YRemain = 1: Direction = 3
+    If IsKeyPress(VK_LEFT) And Map(Round(PX - 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then XRemain = -1: Direction = 6
+    If IsKeyPress(VK_RIGHT) And Map(Round(PX + 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then XRemain = 1: Direction = 9
     
     If BGM.PlayState = musStopped And BGM.length <> 0 Then BGM.Play
     If BGS.PlayState = musStopped And BGS.length <> 0 Then BGS.Play
@@ -152,7 +158,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(id As String, msg As String)
+Public Sub AnimationMsg(ID As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -172,7 +178,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(id As Integer)
+Public Sub AnimationDone(ID As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

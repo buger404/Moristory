@@ -41,7 +41,23 @@ Attribute VB_Exposed = False
     Dim QuesTime As Long, Ques As Question, BlurDC As Long, ODC As Long
     Dim MsgTime As Long, AddingText As String, MsgTime2 As Long, AddPos As Long
     Dim MsgEvent As String
+    Dim SaveTime As Long
 '======================================
+Public Sub SaveNow()
+    ESave.PutData "PART", PART
+    ESave.PutData "TIMELINE", TimeLine
+    ESave.PutData "CURRENTLINE", CuLine
+    ESave.Save
+    SaveTime = GetTickCount
+    ECore.NewTransform transFadeIn, 1000
+End Sub
+Public Sub ReadSave()
+    PART = ESave.GetData("PART")
+    TimeLine = Val(ESave.GetData("TIMELINE"))
+    CuLine = Val(ESave.GetData("CURRENTLINE"))
+    If PART = "" Then PART = "0"
+    If TimeLine = 0 Then TimeLine = 1
+End Sub
 Public Function GetSpeakerName(Speaker As String) As String
     GetSpeakerName = "？？？"
     Select Case Speaker
@@ -108,6 +124,8 @@ Exec:
         End If
         
         Select Case Params(0)
+            Case "*save"
+                Call SaveNow
             Case "go"
                 Select Case Params(1)
                     Case "maze"
@@ -117,6 +135,10 @@ Exec:
                     Case "battle"
                         CuLine = CuLine + 1
                         ECore.NewTransform transFallDark, 3000, "BattlePage"
+                        Exit Sub
+                    Case "chess"
+                        CuLine = CuLine + 1
+                        ECore.NewTransform transFallDark, 3000, "TicTacToePage"
                         Exit Sub
                 End Select
             Case "***death"
@@ -209,9 +231,10 @@ Exec:
                     GameWindow.Caption = Params(1)
                 End If
             Case "*turn"
-                ESave.PutData "PART", Params(1)
+                PART = Params(1)
                 ECore.NewTransform transFallDark, 1000
                 Call ReadNovel
+                Call SaveNow
                 Exit Sub
             Case "*event"
                 MsgEvent = Params(1)
@@ -257,20 +280,16 @@ Exec:
     GoTo Exec
 End Sub
 Public Sub ReadNovel()
-    PART = ESave.GetData("PART")
-    If PART = "" Then PART = "0"
-    TimeLine = Val(ESave.GetData("TIMELINE"))
-    If TimeLine = 0 Then TimeLine = 1
     
-    Dim temp As String, text As String
+    Dim temp As String, Text As String
     
     Open App.Path & "\article\PART " & PART & ".mss" For Input As #1
     Do While Not EOF(1)
         Line Input #1, temp
-        text = text & temp & vbCrLf
+        Text = Text & temp & vbCrLf
     Loop
     Close #1
-    NLines = Split(text, vbCrLf)
+    NLines = Split(Text, vbCrLf)
     
     CuLine = 0
     DisplayText = ""
@@ -293,7 +312,7 @@ Public Sub DrawQues()
     PaintDC BlurDC, Page.CDC, 0, 0, Alpha:=1 - pro * 1
     Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(130 - pro * 130, 0, 0, 0)
     
-    Page.DrawImage "questionpad.png", GW / 2, GH / 2 + 200 + pro * 500, Alpha:=1, pos:=posOnCenter
+    Page.DrawImage "questionpad.png", GW / 2, GH / 2 + 200 + pro * 500, Alpha:=1, Pos:=posOnCenter
     Page.Writes SpeakerName, GW / 2 - 208, GH / 2 - 59 + pro * 500, 24, argb(255, 255, 255, 255), align:=StringAlignmentCenter
     Page.Writes Ques.Title, GW / 2 + 15, GH / 2 - 53 + pro * 500, 18, argb(255, 27, 27, 27), align:=StringAlignmentCenter
     
@@ -303,7 +322,7 @@ Public Sub DrawQues()
     
     For i = 0 To UBound(Ques.Answers) - 1
         m = CheckMouse(GW / 2 - aw / 2, GH / 2 - 59 + 170 + i * 70 + pro * 500 - ah / 2, aw, ah)
-        Page.DrawImage "answerpad.png", GW / 2, GH / 2 - 59 + 170 + i * 70 + pro * 500, Alpha:=IIf(m <> 0, 1, 0.5), pos:=posOnCenter
+        Page.DrawImage "answerpad.png", GW / 2, GH / 2 - 59 + 170 + i * 70 + pro * 500, Alpha:=IIf(m <> 0, 1, 0.5), Pos:=posOnCenter
         Page.Writes (i + 1) & ". " & Ques.Answers(i).Caption, GW / 2 - 200, GH / 2 - 59 + 170 + i * 70 - 12 + pro * 500, 16, argb(200, 27, 27, 27)
         If m = 3 Then
             mode = "msg"
@@ -349,7 +368,7 @@ Public Sub DrawMsg()
     x = x + 30
     
     For i = 1 To UBound(Roles)
-        Page.DrawImage Roles(i).name & "-" & Roles(i).Face & ".png", x, GH + 140 + IIf(Page.Res.ImgSize(Roles(i).name & "-" & Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0), Alpha:=IIf(Speaker <> Roles(i).name And Speaker <> "aside", 0.7, 1), pos:=posOnBottom
+        Page.DrawImage Roles(i).name & "-" & Roles(i).Face & ".png", x, GH + 140 + IIf(Page.Res.ImgSize(Roles(i).name & "-" & Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0), Alpha:=IIf(Speaker <> Roles(i).name And Speaker <> "aside", 0.7, 1), Pos:=posOnBottom
         x = x + (Page.Res.ImgSize(Roles(i).name & "-" & Roles(i).Face & ".png", imgGetWidth) + 50)
     Next
     
@@ -357,7 +376,7 @@ Public Sub DrawMsg()
         If GetTickCount - MsgTime >= 25 Then DisplayText = DisplayText & Mid(AddingText, AddPos, 1): AddPos = AddPos + 1: MsgTime = GetTickCount
     End If
     
-    Page.DrawImage IIf(Speaker = "aside", "aside", "") & "dialog.png", GW / 2, GH - 130, Alpha:=1, pos:=posOnCenter
+    Page.DrawImage IIf(Speaker = "aside", "aside", "") & "dialog.png", GW / 2, GH - 130, Alpha:=1, Pos:=posOnCenter
     If CheckMouse2 = mMouseUp Then
         If AddPos > Len(AddingText) Then
             MsgEvent = ""
@@ -411,6 +430,17 @@ Public Sub Update()
     If BG <> "" Then Page.DrawImage BG, 0, 0, Alpha:=1
     If FG <> "" Then Page.DrawImage FG, 0, 0, Alpha:=1
     
+    If SaveTime <> 0 Then
+        Page.Clear argb(255, 27, 27, 27)
+        Page.ShowLoading GW / 2 - 64, GH / 2 - 64, 128, 128, 3, argb(255, 0, 176, 240), argb(255, 254, 84, 57), argb(255, 255, 255, 255)
+        Page.Writes "你的存档已经保存", GW / 2, GH - 190, 20, argb(255, 242, 242, 242), align:=StringAlignmentCenter
+        Page.Writes "Tips：死亡时你将会回到最近一个更改你时间线的分支。", GW / 2, GH - 50, 20, argb(180, 242, 242, 242), align:=StringAlignmentCenter
+        If GetTickCount - SaveTime >= 5000 Then
+            ECore.NewTransform transFadeIn, 1000
+            SaveTime = 0
+        End If
+        Exit Sub
+    End If
     
     If mode = "msg" Then
         Call DrawMsg
@@ -427,7 +457,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(id As String, msg As String)
+Public Sub AnimationMsg(ID As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -442,7 +472,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(id As Integer)
+Public Sub AnimationDone(ID As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

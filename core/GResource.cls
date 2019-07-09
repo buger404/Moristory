@@ -368,11 +368,11 @@ Public Sub newImage(Path As String, Optional arg1, Optional arg2, Optional name 
     End If
     
     Dim Ccx As Long, Ccy As Long
-    If Path Like "*face\bm-*.png" Then Ccx = 707: Ccy = 375: w = 355: h = 825
-    If Path Like "*face\kx1-*.png" Then Ccx = 1096: Ccy = 220: w = 389: h = 389
-    If Path Like "*face\xx-*.png" Then Ccx = 1115: Ccy = 463: w = 379: h = 751
-    If Path Like "*face\km1-*.png" Then Ccx = 74: Ccy = 267: w = 245: h = 386
-    If Path Like "*face\fj-*.png" Then Ccx = 977: Ccy = 869: w = 220: h = 176
+    If Path Like "*bm-*.png" Then Ccx = 707: Ccy = 375: w = 355: h = 825
+    If Path Like "*kx1-*.png" Then Ccx = 1096: Ccy = 220: w = 389: h = 389
+    If Path Like "*xx-*.png" Then Ccx = 1115: Ccy = 463: w = 379: h = 751
+    If Path Like "*km1-*.png" Then Ccx = 74: Ccy = 267: w = 245: h = 386
+    If Path Like "*fj-*.png" Then Ccx = 977: Ccy = 869: w = 220: h = 176
     
     temp = Split(Path, "\")
     ReDim Preserve Mems(UBound(Mems) + 1)

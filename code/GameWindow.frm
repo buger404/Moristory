@@ -17,7 +17,7 @@ Begin VB.Form GameWindow
    StartUpPosition =   2  '屏幕中心
    Begin VB.Timer DrawTimer 
       Enabled         =   0   'False
-      Interval        =   5
+      Interval        =   1
       Left            =   9024
       Top             =   264
    End
@@ -40,6 +40,10 @@ Private Sub DrawTimer_Timer()
     EC.Display
 End Sub
 
+Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
+    'BXBattlePage.KeyDown KeyCode
+End Sub
+
 Private Sub Form_KeyPress(KeyAscii As Integer)
     '发送字符输入
     If TextHandle <> 0 Then WaitChr = WaitChr & Chr(KeyAscii)
@@ -56,8 +60,6 @@ Private Sub Form_Load()
     '创建存档（可选）
     Set ESave = New GSaving
     ESave.Create "Moristory.TIMELINE", "kj" & Val(Me.Visible) & "Ehsd" & Val(VB.Screen.FontCount <> 0) & "Cdfd" & Right(Left("54B89", 3), 1) & "3fdkg5" & UCase("d") & "gsA6D1F7305BEjAC8738C" & CLng("&HE2") & "kjgds"
-    ESave.PutData "PART", "4.5"
-    ESave.PutData "TIMELINE", "1"
 
     '开始显示
     Me.Show
@@ -79,6 +81,9 @@ Private Sub Form_Load()
         Set NovelPage = New NovelPage
         Set MazePage = New MazePage
         Set BattlePage = New BattlePage
+        Set TicTacToePage = New TicTacToePage
+        Set BXBattlePage = New BXBattlePage
+        Set SnowmanPage = New SnowmanPage
         MazePage.LoadMap
     '=============================================
 
