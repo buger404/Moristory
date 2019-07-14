@@ -150,6 +150,7 @@ say\me
 effect\dark
 role\bm\add
 say\bm
+*save\
 “青，吃饭喽~”
 黑嘴将哈里络炒里香草端出来。
 “青？”
@@ -330,6 +331,7 @@ say\aside
 say\darks
 “忘了这件事吧？我的孩子。”
 陌生而又熟悉的声音传入他的双耳，然后青的感到眼前一黑。。。
+*save\
 *bg\Wood2.png
 *fg\Stone2.png
 effect\dark

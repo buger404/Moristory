@@ -15,12 +15,6 @@ Begin VB.Form GameWindow
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   805
    StartUpPosition =   2  '屏幕中心
-   Begin VB.Timer DrawTimer 
-      Enabled         =   0   'False
-      Interval        =   1
-      Left            =   9024
-      Top             =   264
-   End
 End
 Attribute VB_Name = "GameWindow"
 Attribute VB_GlobalNameSpace = False
@@ -32,16 +26,17 @@ Attribute VB_Exposed = False
     Dim EC As GMan
 '==================================================
 '   在此处放置你的页面类模块声明
-
+    Dim EndMark As Boolean
 '==================================================
 
 Private Sub DrawTimer_Timer()
     '绘制
-    EC.Display
+    
 End Sub
 
-Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
+Private Sub Form_KeyDown(keycode As Integer, Shift As Integer)
     'BXBattlePage.KeyDown KeyCode
+    If ECore.ActivePage = "MazePage" Then MazePage.KeyDown keycode
 End Sub
 
 Private Sub Form_KeyPress(KeyAscii As Integer)
@@ -63,7 +58,6 @@ Private Sub Form_Load()
 
     '开始显示
     Me.Show
-    DrawTimer.Enabled = True
     
     Set BGM = New GMusic
     Set BGS = New GMusic
@@ -84,11 +78,17 @@ Private Sub Form_Load()
         Set TicTacToePage = New TicTacToePage
         Set BXBattlePage = New BXBattlePage
         Set SnowmanPage = New SnowmanPage
-        MazePage.LoadMap
+        Set WeatherLayer = New WeatherLayer
     '=============================================
 
     '设置活动页面
     EC.ActivePage = "MainPage"
+    
+    Do While EndMark = False
+        EC.Display
+        DoEvents
+    Loop
+    
 End Sub
 
 Private Sub Form_MouseDown(button As Integer, Shift As Integer, x As Single, y As Single)
@@ -110,10 +110,12 @@ Private Sub Form_MouseUp(button As Integer, Shift As Integer, x As Single, y As 
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
+    EndMark = True
     Set NovelPage = Nothing
     Me.Hide
     '终止绘制
-    DrawTimer.Enabled = False
+    'DrawTimer.Enabled = False
     '释放Emerald资源
     EndEmerald
+    End
 End Sub

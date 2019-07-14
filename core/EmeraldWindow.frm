@@ -62,16 +62,16 @@ Public Sub Accept()
     Next
     AcceptMark = True
 End Sub
-Private Sub DisplayBox_MouseDown(button As Integer, Shift As Integer, X As Single, Y As Single)
-    UpdateMouse X, Y, 1, button
+Private Sub DisplayBox_MouseDown(button As Integer, Shift As Integer, x As Single, y As Single)
+    UpdateMouse x, y, 1, button
 End Sub
 
-Private Sub DisplayBox_MouseMove(button As Integer, Shift As Integer, X As Single, Y As Single)
-    If Mouse.State = 0 Then UpdateMouse X, Y, 0, button
+Private Sub DisplayBox_MouseMove(button As Integer, Shift As Integer, x As Single, y As Single)
+    If Mouse.state = 0 Then UpdateMouse x, y, 0, button
 End Sub
 
-Private Sub DisplayBox_MouseUp(button As Integer, Shift As Integer, X As Single, Y As Single)
-    UpdateMouse X, Y, 2, button
+Private Sub DisplayBox_MouseUp(button As Integer, Shift As Integer, x As Single, y As Single)
+    UpdateMouse x, y, 2, button
 End Sub
 Private Sub Form_Load()
     
@@ -91,7 +91,7 @@ Private Sub UpdateTimer_Timer()
     Charge.Page.Clear
     Charge.Page.Update
     Charge.Page.Display DisplayBox.hdc
-    If Mouse.State = 2 Then Mouse.State = 0
+    If Mouse.state = 2 Then Mouse.state = 0
 End Sub
 
 Public Sub NewFocusWindow(w As Long, h As Long, ch As Object)
@@ -100,38 +100,38 @@ Public Sub NewFocusWindow(w As Long, h As Long, ch As Object)
     Dim Sc As Long, Dh As Long
     Dh = GetDesktopWindow: Sc = GetDC(Dh)
     
-    Dim X As Long, Y As Long
-    Dim g As Long, b As Long, img As Long, g2 As Long
-    GdipCreateFromHDC Me.hdc, g
+    Dim x As Long, y As Long
+    Dim G As Long, b As Long, img As Long, g2 As Long
+    PoolCreateFromHdc Me.hdc, G
     
     DisplayBox.Width = w: DisplayBox.Height = h
     DisplayBox.Move Me.ScaleWidth / 2 - w / 2, Me.ScaleHeight / 2 - h / 2
-    X = DisplayBox.Left: Y = DisplayBox.top + 10
+    x = DisplayBox.Left: y = DisplayBox.top + 10
     
     BitBlt Me.hdc, 0, 0, Me.ScaleWidth, Me.ScaleHeight, Sc, 0, 0, vbSrcCopy
     ReleaseDC Dh, Sc
     
     BlurTo Me.hdc, Me.hdc, Me, 100
     
-    GdipCreateSolidFill argb(20, 0, 116, 217), b
+    PoolCreateSolidFill argb(20, 0, 116, 217), b
 
-    GdipFillRectangle g, b, 0, 0, Me.ScaleWidth, Me.ScaleHeight
+    GdipFillRectangle G, b, 0, 0, Me.ScaleWidth, Me.ScaleHeight
     
-    GdipDeleteBrush b
+    PoolDeleteBrush b
     
     GdipCreateBitmapFromScan0 Me.ScaleWidth, Me.ScaleHeight, ByVal 0, PixelFormat32bppARGB, ByVal 0, img
     GdipGetImageGraphicsContext img, g2
     
-    GdipCreateSolidFill argb(100, 0, 0, 0), b
+    PoolCreateSolidFill argb(100, 0, 0, 0), b
     
-    GdipFillRectangle g2, b, X, Y, w + 1, h + 1
+    GdipFillRectangle g2, b, x, y, w + 1, h + 1
     BlurImg img, 30
-    GdipDrawImage g, img, 0, 0
+    GdipDrawImage G, img, 0, 0
     
-    GdipDeleteBrush b
-    GdipDisposeImage img
+    PoolDeleteBrush b
+    PoolDisposeImage img
     
-    GdipDeleteGraphics g
+    PoolDeleteGraphics G
 
     Set Charge = ch
     Charge.Page.Clear

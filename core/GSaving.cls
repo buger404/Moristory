@@ -23,20 +23,20 @@ Private Type SaveFile
 End Type
 Dim MySave As SaveFile
 Public AutoSave As Boolean
-Public sToken As Boolean, path As String
+Public sToken As Boolean, Path As String
 Public Key As String
 '========================================================
 '   Init
     Public Function Create(name As String, Optional BMKey) As Boolean
-        path = "C:\Users\" & PoolCreateObject("Wscript.Network").Username & "\AppData\Local\" & name
+        Path = "C:\Users\" & PoolCreateObject("Wscript.Network").Username & "\AppData\Local\" & name
         AutoSave = True
         
         If Not IsMissing(BMKey) Then Key = BMKey
         
         ReDim MySave.data(0)
-        If Dir(path & "\", vbDirectory) = "" Then
+        If Dir(Path & "\", vbDirectory) = "" Then
             If name <> "Emerald.Core" Then
-                SysPage.index = 0: SysPage.Key = 0
+                SysPage.Index = 0: SysPage.Key = 0
                 Dim Win As Object
                 Set Win = StartScreenDialog(600, 400, SysPage)
                 Set SysPage.Win = Win
@@ -45,13 +45,13 @@ Public Key As String
                 Loop
                 Unload Win
                 
-                If SysPage.Key = 1 Then MkDir path & "\"
+                If SysPage.Key = 1 Then MkDir Path & "\": Create = True
             Else
-                MkDir path & "\"
+                MkDir Path & "\"
             End If
         Else
-            If Dir(path & "\save") <> "" Then
-                Open path & "\save" For Binary As #1
+            If Dir(Path & "\save") <> "" Then
+                Open Path & "\save" For Binary As #1
                 Get #1, , MySave
                 Close #1
                 Call CheckSave
@@ -86,12 +86,12 @@ Public Key As String
     Public Function Count() As Long
         Count = UBound(MySave.data)
     End Function
-    Public Function GetName(index As Integer) As String
-        GetName = MySave.data(index).name
+    Public Function GetName(Index As Integer) As String
+        GetName = MySave.data(Index).name
     End Function
     Public Sub Save()
         If sToken = False Then Exit Sub
-        Open path & "\save" For Binary As #1
+        Open Path & "\save" For Binary As #1
         Put #1, , MySave
         Close #1
     End Sub

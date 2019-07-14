@@ -19,6 +19,7 @@ say\aside
 *fg\Stone2.png
 say\aside
 最后，它走到了迷宫的尽头。
+*save\
 前方，只有一堵墙。
 say\darkxx
 *bgm\OST 3 - Sweet Flower.mp3
@@ -188,6 +189,7 @@ face\xx\normal
 say\aside
 兮兮笑着，微微提着裙子，
 单脚垫着地板转了一圈，尽显优雅之色。
+*save\
 role\bm\add
 face\bm\love
 say\bm
@@ -262,6 +264,7 @@ face\bm\slove
 ++
 “所。。。所以，我们继续前进吧！”
 黑嘴牵上青的手。
+*save\
 say\aside
 bg\255,255,255
 它们走过了那堵墙。
@@ -307,6 +310,7 @@ say\me
 “诶！”
 say\bm
 face\bm\closeeyes
+*save\
 “加油。”
 黑嘴对他微笑着说。
 say\me
@@ -320,6 +324,7 @@ go\battle
 *bgs\
 say\aside
 经过一场大战后，卡西的生命值降到了500.
+*save\
 这意味着青胜利了。为什么胜利条件不是让生命值降到0呢？
 毕竟这只是火伴之间的决斗，而不是残暴的厮杀。
 say\bm
@@ -414,6 +419,7 @@ face\bm\cry
 face\bm\sad
 随后，黑嘴勉强地笑了一下。
 “你是大家的希望啊。”
+*save\
 ++
 *bgm\OST 11 - Heartbeat.mp3
 “我。。。我会加。。。啊！！！！”
