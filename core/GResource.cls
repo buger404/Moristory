@@ -69,7 +69,7 @@ Public Sub ClipCircle(N)
     
     Call ReDraw(index)
 End Sub
-Private Sub ApplyEffect(N, kind As GdipEffectType)
+Private Sub ApplyEffect(N, Kind As GdipEffectType)
     Dim index As Integer
     
     If TypeName(N) = "String" Then
@@ -80,7 +80,7 @@ Private Sub ApplyEffect(N, kind As GdipEffectType)
     
     effectimg = Mems(index).ImgHwnd
     
-    PoolCreateEffect2 kind, Effect
+    PoolCreateEffect2 Kind, Effect
     
     effectindex = index
 End Sub
@@ -218,11 +218,11 @@ Private Sub ReDraw(i As Integer)
     
     Mems(i).CrashIndex = UBound(ColorLists)
 End Sub
-Public Sub Add(mem As Long, kind As Integer, name As String, Optional W, Optional h, Optional Folder As String = "")
+Public Sub Add(mem As Long, Kind As Integer, name As String, Optional W, Optional h, Optional Folder As String = "")
     ReDim Preserve Mems(UBound(Mems) + 1)
     With Mems(UBound(Mems))
         .Hwnd = mem
-        .kind = kind
+        .Kind = Kind
         .name = name
         .Folder = Folder
         If Not IsMissing(W) Then .W = W
@@ -255,7 +255,7 @@ Public Sub Dispose()
     Exit Sub
     For i = 1 To UBound(Mems)
         If Not Mems(i).copyed Then
-            Select Case Mems(i).kind
+            Select Case Mems(i).Kind
                 Case 0 'DC
                     If Mems(i).Hwnd <> 0 Then DeleteObject Mems(i).Hwnd
                     If Mems(i).ImgHwnd <> 0 Then PoolDisposeImage Mems(i).ImgHwnd
@@ -292,7 +292,7 @@ Public Property Get ResourceGIFCount(index As Integer) As Long
     ResourceGIFCount = Mems(index).GIF.Count
 End Property
 Public Property Get ResourceGIFTime(index As Integer) As Long
-    ResourceGIFTime = Mems(index).GIF.time
+    ResourceGIFTime = Mems(index).GIF.Time
 End Property
 Public Property Get ResourceName(index As Integer) As Long
     ResourceName = Mems(index).name
@@ -311,7 +311,7 @@ Public Property Get ResourceImageHandle(index As Integer) As Long
 End Property
 Public Function GetImage(ByVal name As String) As Integer
     For i = SearchIndex To UBound(Mems)
-        If Mems(i).kind = 0 Then
+        If Mems(i).Kind = 0 Then
             If Mems(i).name = name Then GetImage = i: Exit For
         End If
     Next
@@ -370,9 +370,12 @@ Public Sub newImage(Path As String, Optional arg1, Optional arg2, Optional name 
     Dim Ccx As Long, Ccy As Long
     If Path Like "*bm-*.png" Then Ccx = 707: Ccy = 375: W = 355: h = 825
     If Path Like "*kx1-*.png" Then Ccx = 1096: Ccy = 220: W = 389: h = 389
+    If Path Like "*kx2-*.png" Then Ccx = 444: Ccy = 281: W = 264: h = 213
+    If Path Like "*xl-*.png" Then Ccx = 336: Ccy = 740: W = 522: h = 411
     If Path Like "*xx-*.png" Then Ccx = 1115: Ccy = 463: W = 379: h = 751
     If Path Like "*km1-*.png" Then Ccx = 74: Ccy = 267: W = 245: h = 386
     If Path Like "*fj-*.png" Then Ccx = 977: Ccy = 869: W = 220: h = 176
+    If Path Like "*bg-*.png" Then Ccx = 222: Ccy = 866: W = 99: h = 255
     
     temp = Split(Path, "\")
     ReDim Preserve Mems(UBound(Mems) + 1)

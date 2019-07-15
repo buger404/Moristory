@@ -40,8 +40,10 @@ Attribute VB_Exposed = False
         OldY As Single
     End Type
     Dim Crash As New GCrashBox, CanAtk As Boolean
-    Dim XLMode As Long
+    Dim XLMode As Long, LastXLMode As Long
     Dim DIEMark As Boolean
+    Dim MagicTime As Long, ReTime As Long
+    Dim Says As String, SayTime As Long
 '======================================
 Public Sub LoadMap(Optional MapName As String = "")
     Dim W As Long, h As Long, Image As Long, Color As Long
@@ -111,9 +113,9 @@ Public Sub LoadMap(Optional MapName As String = "")
             BGS.Create App.Path & "\music\bgs\Wind_1_3D_loop.mp3"
             BGS.Play
             WeatherLayer.ChangeWeather "snowstorm"
-            UMaxHp = 1900: UHP = UMaxHp
-            MaxHp = 3900: Hp = MaxHp: LastHp = MaxHp
-            MaxMP = 2100: MP = MaxMP
+            UMaxHp = 2000: UHP = UMaxHp
+            MaxHp = 4000: Hp = MaxHp: LastHp = MaxHp
+            MaxMP = 2000: MP = MaxMP
     End Select
 End Sub
 Public Sub Update()
@@ -284,25 +286,105 @@ Public Sub UpdateSnowStorm()
     Select Case UHP / UMaxHp
         Case Is > 0.99
             XLMode = 0
+            If XLMode <> LastXLMode Then Says = "那么，欢迎你来到圣光核心检查点。": SayTime = GetTickCount
         Case Is > 0.95
             XLMode = 1
+            If XLMode <> LastXLMode Then Says = "在绝望之中哀嚎吧。": SayTime = GetTickCount
         Case Is > 0.9
             XLMode = 8
+            If XLMode <> LastXLMode Then Says = "我会全力击溃你。": SayTime = GetTickCount
         Case Is > 0.85
             XLMode = 2
+            If XLMode <> LastXLMode Then Says = "比我想象中的厉害嘛。": SayTime = GetTickCount
         Case Is > 0.7
             XLMode = 3
+            If XLMode <> LastXLMode Then Says = "来吧，看你打得快还是我恢复得快。": SayTime = GetTickCount
         Case Is > 0.6
             XLMode = 1
+            If XLMode <> LastXLMode Then Says = "你应该好好看看你身后。": SayTime = GetTickCount
         Case Is > 0.5
             XLMode = 6
+            If XLMode <> LastXLMode Then Says = "你是谁啊？": SayTime = GetTickCount
         Case Is > 0.4
             XLMode = 5
+            If XLMode <> LastXLMode Then Says = "你这家伙到底是什么东西啊？": SayTime = GetTickCount
         Case Is >= 300
             XLMode = 7
         Case Is <= 300
             XLMode = 9
+            If XLMode <> LastXLMode Then Says = "我。。。": SayTime = GetTickCount
     End Select
+    If GetTickCount - SayTime >= 5000 Then
+        Randomize
+        Dim RI As Integer
+        RI = Int(Rnd * 5)
+        Select Case XLMode
+            Case 0
+                Says = "那么，欢迎你来到圣光核心检查点。"
+            Case 1
+                Select Case RI
+                    Case 0: Says = "你的血是什么颜色的呢？"
+                    Case 1: Says = "哎呀。尖叫吧。"
+                    Case 2: Says = "放心吧，我会让你毫无痛苦地死去的。"
+                    Case 3: Says = "你尖叫的声音真是好听。"
+                    Case Else: Says = "请原谅我，这也是不可避免的。"
+                End Select
+            Case 8
+                Select Case RI
+                    Case 0: Says = "我可不会放水。"
+                    Case 1: Says = "这个时候或许防御是最佳选择？"
+                    Case 2: Says = "我会使出我的全力。"
+                    Case 3: Says = "也请你认真地和我战斗吧。"
+                    Case Else: Says = "你可别期望我会放过你。"
+                End Select
+            Case 2
+                Select Case RI
+                    Case 0: Says = "看来我小看你了呢。"
+                    Case 1: Says = "你是灵魂吧？"
+                    Case 2: Says = "真有意思。"
+                    Case 3: Says = "真是低估你了。"
+                    Case Else: Says = "这么强大的力量，从哪里得来的？"
+                End Select
+            Case 3
+                Select Case RI
+                    Case 0: Says = "我可是忍受着你的攻击在这里补血呢。"
+                    Case 1: Says = "这最终只是一个赌注罢了。"
+                    Case 2: Says = "你的攻击可以打破奇迹吗？"
+                    Case 3: Says = "恢复体力也是一种计策。"
+                    Case Else: Says = "哎呀。不能安静地让我休息一下吗？"
+                End Select
+            Case 1
+                Select Case RI
+                    Case 0: Says = "去死吧。"
+                    Case 1: Says = "出其不意地杀死你。"
+                    Case 2: Says = "你的死将变得没有理由。"
+                    Case 3: Says = "放弃吧。"
+                    Case Else: Says = "你可以去死一下吗？"
+                End Select
+            Case 6
+                Select Case RI
+                    Case 0: Says = "你谁啊？"
+                    Case 1: Says = "你真的是青？"
+                    Case 2: Says = "你究竟是什么人？"
+                    Case 3: Says = "你到底是谁？"
+                    Case Else: Says = "你不是青吧？"
+                End Select
+            Case 9
+                Select Case RI
+                    Case 0: Says = "我。。。"
+                    Case 1: Says = "。。。"
+                    Case 2: Says = "人家。。。"
+                    Case 3: Says = "我。。。"
+                    Case Else: Says = "。。。"
+                End Select
+        End Select
+        SayTime = GetTickCount
+    End If
+    
+    If XLMode <> LastXLMode Then
+        LastXLMode = XLMode
+        ECore.NewTransform transHighLight, 100
+    End If
     
     Dim RemoveCount As Long, pro As Single, MapW As Long, MapH As Long
     Dim DrawX As Long, DrawY As Long
@@ -371,7 +453,7 @@ Start:
                 End If
             Case 13
                 pro = 1
-                If UGun(i).Step < 14 Then
+                If UGun(i).Step < 13 Then
                     If GetTickCount - UGun(i).Time >= 20 Then UGun(i).Step = UGun(i).Step + 1: UGun(i).Time = GetTickCount
                 Else
                     GoTo Remove
@@ -406,7 +488,7 @@ Remove:
     PaintDC CoverDC, Page.CDC, IIf(cx < 0, -cx, 0), IIf(cy < 0, -cy, 0), IIf(cx >= 0, cx, 0), IIf(cy >= 0, cy, 0), W, h, 1
     Page.DrawImage "xl" & XLMode & ".png", EndX * 90 - cx, EndY * 90 - cy, alpha:=1
     
-    Page.DrawImage "shadow.png", 0, 0, alpha:=0.7 + (1 - (UHP / UMaxHp)) * 0.3
+    Page.DrawImage "shadow.png", 0, 0, alpha:=0.6 + Cubic((1 - (UHP / UMaxHp)), 0, 0, 0, 1) * 0.4
 
     If DIEMark = True And Abs(PX - EndX) <= 1 And PY >= EndY And PY - EndY <= 1 And (Not BGM.IsPlaying) And Direction = 0 Then
         BGM.rate = 1
@@ -439,6 +521,7 @@ Remove:
     If BGM.position > ATKS(ATKIndex) And ATKIndex < UBound(ATKS) And (Not DIEMark) Then
         ATKIndex = ATKIndex + 1
         Call NewUGun(0)
+        If XLMode = 4 Then UHP = UMaxHp
         If XLMode <> 7 Then Call NewUGun(1)
         If XLMode = 3 Or XLMode = 7 Then UHP = UHP + 1
         If XLMode >= 6 Then Call NewUGun(2)
@@ -450,32 +533,54 @@ Remove:
         End If
     End If
     
-    If CanAtk And MP >= 3 Then Page.DrawAnimation "attackbg", GW / 2 - 100, GH - 150
-    Page.DrawImage "atk" & IIf(CanAtk And MP >= 3, 1, 0) & ".png", GW / 2 - 100, GH - 150, alpha:=1, Pos:=posOnCenter
-    Page.Writes "Z", GW / 2 - 70, GH - 120, 28, argb(255, 255, 255, 255), style:=FontStyleBold
+    If CanAtk And MP >= 3 Then Page.DrawAnimation "attackbg", GW - 200, GH - 100
+    Page.DrawImage "atk" & IIf(CanAtk And MP >= 3, 1, 0) & ".png", GW - 200, GH - 100, alpha:=1, Pos:=posOnCenter
+    Page.Writes "Z", GW - 200 + 25, GH - 100 + 20, 24, argb(255, 255, 255, 255), style:=FontStyleBold
     
-    If (Not CanAtk) And MP >= 1 Then Page.DrawAnimation "attackbg", GW / 2 + 100, GH - 150
-    Page.DrawImage "def" & IIf((Not CanAtk) And MP >= 1, 1, 0) & ".png", GW / 2 + 100, GH - 150, alpha:=1, Pos:=posOnCenter
-    Page.Writes "X", GW / 2 + 130, GH - 120, 28, argb(255, 255, 255, 255), style:=FontStyleBold
+    If (Not CanAtk) And MP >= 1 Then Page.DrawAnimation "attackbg", GW - 80, GH - 100
+    Page.DrawImage "def" & IIf((Not CanAtk) And MP >= 1, 1, 0) & ".png", GW - 80, GH - 100, alpha:=1, Pos:=posOnCenter
+    Page.Writes "X", GW - 80 + 25, GH - 100 + 20, 24, argb(255, 255, 255, 255), style:=FontStyleBold
     
-    Page.Paint 0, 50, 50, 300, 25, argb(255, 128, 128, 128)
-    Page.Paint 0, 50, 50, UHP / UMaxHp * 300, 25, IIf(XLMode = 3 Or XLMode = 7, argb(255, 59, 233, 182), argb(255, 0, 176, 240))
-    Page.Writes "雪狼", 50, 90, 18, argb(255, 255, 255, 255)
-    Page.Writes UHP & "/" & UMaxHp, 50, 50, 18, argb(255, 255, 255, 255), 300, 25, StringAlignmentCenter, FontStyleBold
+    Page.DrawImage "uhpframe.png", 0, 40, alpha:=1
+    Page.DrawImage "uhpbar.png", 20, 122, 0, 0, UHP / UMaxHp * 196, alpha:=1
+    Page.Writes "雪狼", 15, 47, 28, argb(255, 255, 255, 255)
+    Page.Writes UHP & "/" & UMaxHp, 160, 61, 18, argb(255, 255, 255, 255), 300, 25, StringAlignmentNear, FontStyleItalic
     
-    Page.Paint 0, GW - 300 - 50, 50, 300, 25, argb(255, 128, 128, 128)
-    Page.Paint 0, GW - 300 - 50, 50, Hp / MaxHp * 300, 25, argb(255, 0, 183, 195)
-    Page.Writes "青（HP）", GW - 50, 90, 18, argb(255, 255, 255, 255), align:=StringAlignmentFar
-    Page.Writes Hp & "/" & MaxHp, GW - 300 - 50, 50, 18, argb(255, 255, 255, 255), 300, 25, StringAlignmentCenter, FontStyleBold
+    Page.DrawImage "mehpframe.png", GW, 40, alpha:=1, Pos:=posOnRight
+    Page.DrawImage "mehpbar.png", GW - 16, 121, 182 - Hp / MaxHp * 182, 0, Hp / MaxHp * 182, alpha:=1, Pos:=posOnRight
+    Page.Writes "青", GW - 15, 48, 28, argb(255, 255, 255, 255), align:=StringAlignmentFar
+    Page.Writes Hp & "/" & MaxHp, GW - 160 - 80, 61, 18, argb(255, 255, 255, 255), 300, 25, StringAlignmentNear, FontStyleItalic
     
-    Page.Paint 0, GW - 300 - 50, 150, 300, 25, argb(255, 128, 128, 128)
-    Page.Paint 0, GW - 300 - 50, 150, MP / MaxMP * 300, 25, argb(255, 162, 89, 255)
-    Page.Writes "青（MP）", GW - 50, 190, 18, argb(255, 255, 255, 255), align:=StringAlignmentFar
-    Page.Writes MP & "/" & MaxMP, GW - 300 - 50, 150, 18, argb(255, 255, 255, 255), 300, 25, StringAlignmentCenter, FontStyleBold
+    Page.DrawImage "mpbar.png", GW / 2, GH - 14, cw:=MP / MaxMP * GW, alpha:=1, Pos:=posOnCenter
+    Page.Writes "MP     " & MP & "/" & MaxMP, GW / 2, GH - 50, 18, argb(255, 255, 255, 255), 0, 0, StringAlignmentCenter, FontStyleBold
+    
+    Page.Paint 2, GW / 2, GH - 105, EF.GetWidth(Page.GG, Says, 18, StringAlignmentCenter, FontStyleRegular) + 80, 40, argb(128, 0, 0, 0), 80, Pos:=posOnCenter
+    Page.Writes Says, GW / 2, GH - 105 - 14, 18, argb(255, 255, 255, 255), align:=StringAlignmentCenter
+    
+    Dim ModeText As String, ModeText2 As String
+    
+    Select Case XLMode
+        Case 0: ModeText = "雪狼の正常形态": ModeText2 = "所有能力正常"
+        Case 1: ModeText = "雪狼の高速形态": ModeText2 = "当心！雪狼将进行瞬移！"
+        Case 2: ModeText = "雪狼の防御形态": ModeText2 = "雪狼受到的伤害将减少25%！"
+        Case 3: ModeText = "雪狼の回复形态": ModeText2 = "嘘~现在雪狼需要停下来回复体力了。"
+        Case 4: ModeText = "雪狼の再生形态": ModeText2 = "？？？？用修改器可不好哦？？？？"
+        Case 5: ModeText = "雪狼の逃生形态": ModeText2 = "现在雪狼跑的很快，并且受到的伤害将减少25%！"
+        Case 6: ModeText = "雪狼の强攻形态": ModeText2 = "雪狼可能在一瞬间杀死你，现在雪狼的攻击力是原来的200%！"
+        Case 7: ModeText = "雪狼の自救形态": ModeText2 = "雪狼现在只能一边防御一边回复体力了。"
+        Case 8: ModeText = "雪狼の攻击形态": ModeText2 = "雪狼现在的攻击力是原来的200%！"
+        Case 9: ModeText = "雪狼の濒死形态": ModeText2 = "雪狼快要撑不下去了。"
+    End Select
+    
+    Page.Writes ModeText, GW / 2, 90, 18, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
+    Page.Writes ModeText2, GW / 2, 130, 18, argb(255, 255, 255, 255), align:=StringAlignmentCenter
+    
+    'page.Writes says,gw / 2 - 100,gh - 100,18
     
     If UHP < 300 And DIEMark = False Then
         DIEMark = True
         BGM.position = 60 + 47
+        WeatherLayer.ChangeWeather ""
         XLMode = 9
     End If
     
@@ -489,6 +594,14 @@ Remove:
         Unload GameWindow
         End
     End If
+    
+    If GetTickCount - MagicTime >= 2000 Then
+        If GetTickCount - ReTime >= 250 Then
+            MP = MP + 1
+            ReTime = GetTickCount
+            If MP >= MaxMP Then MP = MaxMP
+        End If
+    End If
 End Sub
 Public Sub KeyDown(Code As Integer)
     If MapNames <> "snowstorm" Then Exit Sub
@@ -499,8 +612,10 @@ Public Sub KeyDown(Code As Integer)
         If XLMode = 2 Or XLMode = 5 Or XLMode = 7 Then ATK = ATK * 0.75
         UHP = UHP - ATK
         MP = MP - 3
+        MagicTime = GetTickCount
         Call NewUGun(12)
     ElseIf Code = vbKeyX And (Not CanAtk) And MP >= 1 Then
+        MagicTime = GetTickCount
         Call NewUGun(13)
         MP = MP - 1
         Hp = LastHp
@@ -575,7 +690,7 @@ Public Sub AnimationMsg(ID As String, msg As String)
 End Sub
 Public Sub Enter()
     '页面进入事件
-
+    Says = "那么，欢迎你来到圣光核心检查点。": SayTime = GetTickCount
 End Sub
 Public Sub Leave()
     '页面离开事件
@@ -601,11 +716,11 @@ Private Sub Class_Initialize()
     Page.Res.HotLoad = True
     'Page.Res.NoLoadCrash = False
     Page.Res.NewImages App.Path & "\assets\xlface"
-
+    Page.Res.NewImages App.Path & "\assets\snowstormui", GW / 1519
     'Page.Res.NoLoadCrash = True
     Page.Res.NewImages App.Path & "\assets\battle\images"
     Page.LoadAnimationsFromDir App.Path & "\battle_animation"
-    Page.CreatePlayAnimation "attackbg", "attackbg", "Default"
+    Page.CreatePlayAnimation "attackbg2", "attackbg", "Default"
     
     '创建页面
     ECore.Add Page, "MazePage"

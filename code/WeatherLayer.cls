@@ -16,8 +16,8 @@ Attribute VB_Exposed = False
     Dim Page As GPage
     Public Weather As String
     Private Type Pos
-        X As Long
-        Y As Long
+        x As Long
+        y As Long
         Pic As String
     End Type
     Dim Snow() As Pos
@@ -37,8 +37,8 @@ Public Sub Update()
 End Sub
 Public Sub RandomSnow(i As Integer)
     With Snow(i)
-        .X = Int(Rnd * GW)
-        .Y = -90 - Int(Rnd * GH)
+        .x = Int(Rnd * GW)
+        .y = -90 - Int(Rnd * GH)
         .Pic = IIf(Int(Rnd * 2) = 0, "bigsnow.png", "smallsnow.png")
     End With
 End Sub
@@ -59,28 +59,28 @@ End Sub
 Public Sub DrawSnow()
     Dim i As Integer
     For i = 0 To UBound(Snow)
-        If Snow(i).Y > 0 Then Page.DrawImage Snow(i).Pic, Snow(i).X, Snow(i).Y, alpha:=1, Pos:=posOnCenter
-        Snow(i).Y = Snow(i).Y + 20 * IIf(i Mod 2 = 0, 1.5, 1)
-        If Snow(i).Y > GH Then Call RandomSnow(i)
+        If Snow(i).y > 0 Then Page.DrawImage Snow(i).Pic, Snow(i).x, Snow(i).y, alpha:=1, Pos:=posOnCenter
+        Snow(i).y = Snow(i).y + 20 * IIf(i Mod 2 = 0, 1.5, 1)
+        If Snow(i).y > GH Then Call RandomSnow(i)
     Next
 End Sub
 Public Sub DrawSnowStorm()
-    Page.DrawImage "snowscreen.png", 0, 0, alpha:=1
+    'Page.DrawImage "snowscreen.png", 0, 0, alpha:=1
     Dim i As Integer
     For i = 0 To UBound(Snow)
-        If Snow(i).Y > 0 Then
-            Page.DrawImage Snow(i).Pic, Snow(i).X, Snow(i).Y, alpha:=1, Pos:=posOnCenter
+        If Snow(i).y > 0 Then
+            Page.DrawImage Snow(i).Pic, Snow(i).x, Snow(i).y, alpha:=1, Pos:=posOnCenter
         End If
-        Snow(i).Y = Snow(i).Y + 25 * IIf(i Mod 2 = 0, 1.5, 1)
-        Snow(i).X = Snow(i).X + 10 * IIf(i Mod 2 = 0, 1, 2)
-        If Snow(i).Y > GH Then Call RandomSnow(i): Snow(i).X = Int(Rnd * GW * 2) - GW
+        Snow(i).y = Snow(i).y + 25 * IIf(i Mod 2 = 0, 1.5, 1)
+        Snow(i).x = Snow(i).x + 10 * IIf(i Mod 2 = 0, 1, 2)
+        If Snow(i).y > GH Then Call RandomSnow(i): Snow(i).x = Int(Rnd * GW * 2) - GW
     Next
 End Sub
 Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(id As String, msg As String)
+Public Sub AnimationMsg(ID As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -95,7 +95,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(id As Integer)
+Public Sub AnimationDone(ID As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

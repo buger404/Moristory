@@ -51,32 +51,32 @@ Attribute VB_Exposed = False
     Dim N As NovelArg
     Dim SaveTime As Long
 '======================================
-Public Sub SaveNow(Optional Index As String = "")
-    ESave.PutData "PART" & Index, Part
-    ESave.PutData "TIMELINE" & Index, TimeLine
-    ESave.PutData "CURRENTLINE" & Index, CuLine
+Public Sub SaveNow(Optional index As String = "")
+    ESave.PutData "PART" & index, Part
+    ESave.PutData "TIMELINE" & index, TimeLine
+    ESave.PutData "CURRENTLINE" & index, CuLine
     ESave.Save
-    Open ESave.Path & "\running" & Index & ".dat" For Binary As #1
+    Open ESave.Path & "\running" & index & ".dat" For Binary As #1
     Put #1, , N
     Close #1
     
-    If Index = "" Then
+    If index = "" Then
         SaveTime = GetTickCount
         ECore.NewTransform transFadeIn, 1000
     End If
 End Sub
-Public Sub RepairSave(Index As String)
-    FileCopy ESave.Path & "\running" & Index & ".dat", ESave.Path & "\running.dat"
-    ESave.PutData "PART", ESave.GetData("PART" & Index)
-    ESave.PutData "TIMELINE", Val(ESave.GetData("TIMELINE" & Index))
-    ESave.PutData "CURRENTLINE", Val(ESave.GetData("CURRENTLINE" & Index))
+Public Sub RepairSave(index As String)
+    FileCopy ESave.Path & "\running" & index & ".dat", ESave.Path & "\running.dat"
+    ESave.PutData "PART", ESave.GetData("PART" & index)
+    ESave.PutData "TIMELINE", Val(ESave.GetData("TIMELINE" & index))
+    ESave.PutData "CURRENTLINE", Val(ESave.GetData("CURRENTLINE" & index))
     ESave.Save
 End Sub
 Public Sub ReadSave()
     Part = ESave.GetData("PART")
     TimeLine = Val(ESave.GetData("TIMELINE"))
     CuLine = Val(ESave.GetData("CURRENTLINE"))
-    If Part = "" Then Part = "0"
+    If Part = "" Then Part = "-1"
     If TimeLine = 0 Then TimeLine = 1
     If Dir(ESave.Path & "\running.dat") <> "" Then
         Open ESave.Path & "\running.dat" For Binary As #1
@@ -162,13 +162,33 @@ Exec:
         End If
         
         Select Case Params(0)
+            Case "demo"
+                MsgBox "DEMO内容到此结束，感谢您的支持！请期待7.25的正式版本~", 64, "Moristory"
+                ECore.NewTransform transFallDark, 2000, "MainPage"
+                Exit Sub
             Case "*save"
                 SE.Play "Save.mp3"
                 CuLine = CuLine + 1
                 Call SaveNow
                 CuLine = CuLine - 1
+            Case "*weather"
+                WeatherLayer.ChangeWeather Params(1)
             Case "go"
                 Select Case Params(1)
+                    Case "snowstorm"
+                        CuLine = CuLine + 1
+                        MazePage.LoadMap "snowstorm"
+                        ECore.NewTransform transFallDark, 3000, "MazePage"
+                        Exit Sub
+                    Case "snowman"
+                        CuLine = CuLine + 1
+                        ECore.NewTransform transFallDark, 3000, "SnowmanPage"
+                        Exit Sub
+                    Case "mazesnow"
+                        CuLine = CuLine + 1
+                        MazePage.LoadMap "snow"
+                        ECore.NewTransform transFallDark, 3000, "MazePage"
+                        Exit Sub
                     Case "maze"
                         CuLine = CuLine + 1
                         MazePage.LoadMap
@@ -423,14 +443,18 @@ Public Sub DrawMsg()
     Dim x As Long
     x = GW / 2
     For i = 1 To UBound(N.Roles)
-        x = x - (Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 50) / 2
+        If N.Roles(i).name <> "bg" Then x = x - (Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 50) / 2
     Next
     
     x = x + 30
     
     For i = 1 To UBound(N.Roles)
-        Page.DrawImage N.Roles(i).name & "-" & N.Roles(i).Face & ".png", x, GH + 140 + IIf(Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0), alpha:=IIf(N.Speaker <> N.Roles(i).name And Speaker <> "aside", 0.7, 1), Pos:=posOnBottom
-        x = x + (Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 50)
+        If N.Roles(i).name = "bg" Then
+            Page.DrawImage N.Roles(i).name & "-" & N.Roles(i).Face & ".png", x - (Page.Res.ImgSize(N.Roles(i - 1).name & "-" & N.Roles(i - 1).Face & ".png", imgGetWidth) + 50) + 210, GH - 400, alpha:=IIf(N.Speaker <> N.Roles(i).name And Speaker <> "aside", 0.7, 1), Pos:=posOnBottom
+        Else
+            Page.DrawImage N.Roles(i).name & "-" & N.Roles(i).Face & ".png", x, GH + 140 + IIf(N.Roles(i).name = "xl", -250, 0) + IIf(Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0), alpha:=IIf(N.Speaker <> N.Roles(i).name And Speaker <> "aside", 0.7, 1), Pos:=posOnBottom
+            x = x + (Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 50)
+        End If
     Next
     
     If AddPos <= Len(AddingText) Then
