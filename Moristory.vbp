@@ -35,6 +35,7 @@ Class=TicTacToePage; code\TicTacToePage.cls
 Class=BXBattlePage; code\BXBattlePage.cls
 Class=SnowmanPage; code\SnowmanPage.cls
 Class=WeatherLayer; code\WeatherLayer.cls
+Class=TipPage; core\TipPage.cls
 IconForm="GameWindow"
 Startup="GameWindow"
 HelpFile=""

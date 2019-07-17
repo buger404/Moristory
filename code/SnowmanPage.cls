@@ -84,21 +84,25 @@ Public Sub Update()
         Page.DrawAnimation "Ice", GW / 2, GH - 40 + DrawY - High2 - Int(Size) / 2
         Page.Writes Int(Int(Size) / Balls(UBound(Balls)) * 100) & "%", GW / 2, GH - 40 + DrawY - High2 - Int(Size) / 2 - 12, 24, argb(255, 27, 27, 27), align:=StringAlignmentCenter
         'Page.Paint 1, GW / 2 - Int(Size) / 2, GH - 40 + DrawY - High2, Int(Size), Int(Size), argb(255, 212, 212, 225), Size:=2, style:=1, Pos:=posOnBottom
+        If Size > Balls(UBound(Balls)) * 1.1 Then
+            SE.Play "Collapse4.mp3"
+            StartTime = GetTickCount + 2000
+            BGM.Stops
+            BGM.Play
+            ReDim Balls(1)
+            Balls(1) = 250
+            DeathText = "释放的雪球太大，雪人倒塌了！"
+            Mouse.state = 0
+            BallTime = 0
+            Exit Sub
+            'ECore.NewTransform transFallDark, 2000
+        End If
+        
         If m = MButtonState.mMouseUp Then
             BallTime = 0
             ReDim Preserve Balls(UBound(Balls) + 1)
             Balls(UBound(Balls)) = Size
             SE.Play "Ice4.mp3"
-            If Size > Balls(UBound(Balls) - 1) * 1.1 Then
-                SE.Play "Collapse4.mp3"
-                StartTime = GetTickCount + 2000
-                BGM.Stops
-                BGM.Play
-                ReDim Balls(1)
-                Balls(1) = 250
-                DeathText = "释放的雪球太大，雪人倒塌了！"
-                'ECore.NewTransform transFallDark, 2000
-            End If
         End If
     End If
     
@@ -113,7 +117,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, msg As String)
+Public Sub AnimationMsg(id As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -132,7 +136,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(ID As Integer)
+Public Sub AnimationDone(id As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

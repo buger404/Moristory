@@ -22,6 +22,12 @@ Attribute VB_Exposed = False
     Dim Keys() As BKey, NowIndex As Long
     Dim Heart As Long
     Dim HurtTime As Long, LitTime As Long
+    Private Type EXCEMark
+        Time As Long
+        X As Long
+        Y As Long
+    End Type
+    Dim Exce() As EXCEMark
 '======================================
 
 Public Sub Update()
@@ -37,11 +43,11 @@ Public Sub Update()
         Next
     End If
     
-    Page.DrawImage "garden.jpg", 0, 0, Alpha:=1
-    Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(IIf(Hot / 200000 * 120 <= 120, Hot / 200000 * 120, 120), 255, 255, 255)
+    Page.DrawImage "garden.jpg", 0, 0, alpha:=1
+    Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(IIf(Hot / 300000 * 20 <= 20, Hot / 300000 * 20, 20) + 50, 255, 255, 255)
     
-    Page.DrawImage "bm-normal.png", GW / 2 - 335, 70, Alpha:=1
-    Page.DrawImage "xx-normal.png", GW / 2 - 15, 150, Alpha:=1
+    Page.DrawImage "bm-normal.png", GW / 2 - 335, 70, alpha:=1
+    Page.DrawImage "xx-normal.png", GW / 2 - 15, 150, alpha:=1
     Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(20, 0, 0, 0)
     Page.Paint 0, 0, GH * 0.75, GW + 1, GH * 0.25, argb(150, 0, 0, 0)
     
@@ -50,7 +56,7 @@ Public Sub Update()
     Dim W As Long, pro As Single
     W = Int(GW / 9)
     
-    Page.Paint 0, Int(Mouse.x / W) * W, 0, W, GH + 1, IIf(GetTickCount - HurtTime <= 5000, IIf(GetTickCount Mod 300 < 150, argb(50, 255, 0, 0), argb(255, 255, 0, 0)), argb(50, 255, 255, 255))
+    Page.Paint 0, Int(Mouse.X / W) * W, 0, W, GH + 1, IIf(GetTickCount - HurtTime <= 5000, IIf(GetTickCount Mod 300 < 150, argb(50, 255, 0, 0), argb(255, 255, 0, 0)), argb(50, 255, 255, 255))
     
     Dim Speed As Single
     Speed = 6.2 / (1 + Cubic((BGM.position / BGM.length), 0, 1, 1, 1) * 1.14)
@@ -69,13 +75,21 @@ Public Sub Update()
             Exit For
         End If
         pro = (1 - (Keys(i).Pos - BGM.position) / Speed) * (GH * 0.7 + 90 * 2) - 90 * 1.6
-        Page.DrawImage Keys(i).Pic, W * Keys(i).Area + W / 2, Int(pro), Alpha:=IIf(i = NowIndex, 1, 0.6), Pos:=posOnCenter
+        Page.DrawImage Keys(i).Pic, W * Keys(i).Area + W / 2, Int(pro), alpha:=IIf(i = NowIndex, 1, 0.6), Pos:=posOnCenter
         If pro >= GH * 0.75 Then
-            If Int(Mouse.x / W) = Keys(i).Area And i = NowIndex Then
+            If Int(Mouse.X / W) = Keys(i).Area And i = NowIndex Then
                 SE.Play "hit.wav"
                 NowIndex = i + 1
                 'Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(255, 255, 255, 255)
-                LitTime = GetTickCount
+                'LitTime = GetTickCount
+                If Abs(BGM.position - Keys(i).Pos) <= 0.2 Then
+                    ReDim Preserve Exce(UBound(Exce) + 1)
+                    With Exce(UBound(Exce))
+                        .X = Mouse.X
+                        .Y = Mouse.Y
+                        .Time = GetTickCount
+                    End With
+                End If
             End If
         End If
         
@@ -100,10 +114,27 @@ Public Sub Update()
     End If
     
     For i = 1 To 3
-        Page.DrawImage "heart.png", 20 + (i - 1) * 64, 20, Alpha:=IIf(Heart >= i, 1, 0.3)
+        Page.DrawImage "heart.png", 20 + (i - 1) * 64, 20, alpha:=IIf(Heart >= i, 1, 0.3)
     Next
     If GetTickCount - HurtTime <= 5000 Then Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(IIf(GetTickCount Mod 300 < 150, 20, 0), 255, 0, 0)
     
+    Dim ExceStr As String
+    ExceStr = "EXCELLENT"
+    
+    For i = 1 To UBound(Exce)
+        If i > UBound(Exce) Then Exit For
+        pro = Cubic((GetTickCount - Exce(i).Time) / 1000, 0, 1, 1, 1)
+        If pro > 1 Then
+            Exce(i) = Exce(UBound(Exce))
+            ReDim Preserve Exce(UBound(Exce) - 1)
+            GoTo SkipThis
+        End If
+        For s = 1 To Len(ExceStr)
+            Page.Writes Mid(ExceStr, s, 1), Exce(i).X + pro * (s - 4) * 40, Exce(i).Y - 9, 18, argb(255 - 255 * pro, 255, 255, 255), align:=StringAlignmentCenter
+        Next
+SkipThis:
+    Next
+
     Page.DrawAnimation "千叶斩", GW / 2, GH - 200
     Page.DrawAnimation "圣光矢", GW / 2, GH - 200
     
@@ -120,6 +151,7 @@ Public Sub Update()
         BGM.Play
         HurtTime = 0
         Heart = 3
+        ReDim Exce(0)
         ECore.NewTransform transFallDark, 2000
     End If
 End Sub
@@ -151,7 +183,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, msg As String)
+Public Sub AnimationMsg(id As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -169,7 +201,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(ID As Integer)
+Public Sub AnimationDone(id As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub
@@ -193,6 +225,7 @@ Private Sub Class_Initialize()
     '创建页面
     ECore.Add Page, "BXBattlePage"
     ReDim Keys(330)
+    ReDim Exce(0)
     Open App.Path & "\assets\bxbattlekeys.key" For Binary As #1
     Get #1, , Keys
     Close #1

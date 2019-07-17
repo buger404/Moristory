@@ -53,15 +53,15 @@ Public Sub Update()
     
     Page.Clear '清空画布
 
-    Page.DrawImage "Meadow.png", 0, 0, Alpha:=1
-    Page.DrawImage "Stone2.png", 0, 0, Alpha:=1
+    Page.DrawImage "Meadow.png", 0, 0, alpha:=1
+    Page.DrawImage "Stone2.png", 0, 0, alpha:=1
     
     Dim SinBuff As Long
     
     SinBuff = 300 + IIf(Step = 2, ATKBuff - 300, Sin((GetTickCount / 400) + 1) * IIf(Step = 1, 170 * (1 + (1 - UHP / UMaxHp) / 2), 80))
-    Page.DrawImage "kx1-normal.png", GW / 2 + 3, SinBuff + 2 - 2, Alpha:=1, Pos:=posOnCenter
+    Page.DrawImage "kx1-normal.png", GW / 2 + 3, SinBuff + 2 - 2, alpha:=1, Pos:=posOnCenter
     For i = 0 To 10
-        Page.DrawImage "kx1-normal.png", GW / 2 + 3, 300 + IIf(Step = 2, ATKBuff - 300, Sin((GetTickCount / 400) + i / 10) * IIf(Step = 1, 170 * (1 + (1 - UHP / UMaxHp) / 2), 80)), Alpha:=0.1, Pos:=posOnCenter
+        Page.DrawImage "kx1-normal.png", GW / 2 + 3, 300 + IIf(Step = 2, ATKBuff - 300, Sin((GetTickCount / 400) + i / 10) * IIf(Step = 1, 170 * (1 + (1 - UHP / UMaxHp) / 2), 80)), alpha:=0.1, Pos:=posOnCenter
     Next
     
     Dim pro As Single
@@ -137,16 +137,16 @@ Public Sub Update()
     
     If Step = 0 Then
         Dim m As Integer
-        Page.DrawImage "atk0.png", GW / 2 - 100, GH - 150, Alpha:=0, Pos:=posOnCenter
+        Page.DrawImage "atk0.png", GW / 2 - 100, GH - 150, alpha:=0, Pos:=posOnCenter
         m = CheckMouse2
         If m >= MButtonState.mMouseIn Then Page.DrawAnimation "attackbg", GW / 2 - 100, GH - 150
-        Page.DrawImage "atk" & IIf(m >= mMouseIn, 1, 0) & ".png", GW / 2 - 100, GH - 150, Alpha:=1, Pos:=posOnCenter
-        If m = MButtonState.mMouseUp Then SE.Play "Cursor.mp3": Step = 1: ECore.NewTransform
+        Page.DrawImage "atk" & IIf(m >= mMouseIn, 1, 0) & ".png", GW / 2 - 100, GH - 150, alpha:=1, Pos:=posOnCenter
+        If m = MButtonState.mMouseUp Then SE.Play "Cursor.mp3": Step = 1: ECore.NewTransform: RoundTime = GetTickCount
         
-        Page.DrawImage "def0.png", GW / 2 + 100, GH - 150, Alpha:=1, Pos:=posOnCenter
+        Page.DrawImage "def0.png", GW / 2 + 100, GH - 150, alpha:=1, Pos:=posOnCenter
         m = CheckMouse2
         If m >= MButtonState.mMouseIn Then Page.DrawAnimation "attackbg", GW / 2 + 100, GH - 150
-        Page.DrawImage "def" & IIf(m >= mMouseIn, 1, 0) & ".png", GW / 2 + 100, GH - 150, Alpha:=1, Pos:=posOnCenter
+        Page.DrawImage "def" & IIf(m >= mMouseIn, 1, 0) & ".png", GW / 2 + 100, GH - 150, alpha:=1, Pos:=posOnCenter
         If m = MButtonState.mMouseUp Then
             UATK = (Hp - LastHp)
             Hp = LastHp
@@ -158,14 +158,19 @@ Public Sub Update()
     
     If Step = 1 Then
         Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(80, 255, 0, 0)
+        
+        Page.PaintArc GW / 2, GH / 2, 128, 128, (1 - (GetTickCount - RoundTime) / (4000 - 1300 * (1 + (1 - UHP / UMaxHp) / 2))) * 360, Color:=argb(70, 0, 0, 0), style:=2, Pos:=posOnCenter
+
         Page.PaintLine GW / 2 - 50, GH / 2, GW / 2 + 50, GH / 2, argb(255, 255, 0, 0), 3
         Page.PaintLine GW / 2, GH / 2 - 50, GW / 2, GH / 2 + 50, argb(255, 255, 0, 0), 3
         
         If GetTickCount Mod 300 < 150 Then Page.Writes "按下鼠标攻击", GW / 2, GH / 2 + 150, 20, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
-        If Mouse.button = 1 And Mouse.state = 2 Then
+        
+        If (Mouse.button = 1 And Mouse.state = 2) Or (GetTickCount - RoundTime >= (4000 - 1300 * (1 + (1 - UHP / UMaxHp) / 2))) Then
             ATK = 0
             Randomize
             ATK = (Abs(SinBuff - GH / 2))
+            If GetTickCount - RoundTime >= (4000 - 1300 * (1 + (1 - UHP / UMaxHp) / 2)) Then ATK = 9000
             Debug.Print Now, "pitch", ATK
             ATK = Cubic((100 - ATK) / (100), 0, 1, 1, 1) * 150 * (Rnd * 0.3 + 1)
             ATKBuff = SinBuff

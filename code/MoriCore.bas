@@ -10,6 +10,7 @@ Public TicTacToePage As TicTacToePage
 Public BXBattlePage As BXBattlePage
 Public SnowmanPage As SnowmanPage
 Public WeatherLayer As WeatherLayer
+Public TipPage As TipPage
 
 Public Function GetPartTitle(Part As String) As String
     Dim temp As String

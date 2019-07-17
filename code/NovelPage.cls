@@ -49,7 +49,9 @@ Attribute VB_Exposed = False
     Dim QuesTime As Long, Ques As Question, BlurDC As Long, ODC As Long
     Dim MsgTime As Long, AddingText As String, MsgTime2 As Long, AddPos As Long
     Dim N As NovelArg
-    Dim SaveTime As Long
+    Dim Historys() As String, HistoryIndex As Long
+    Dim SaveTime As Long, SaveSndMark As Boolean
+    Dim LastMode As String
 '======================================
 Public Sub SaveNow(Optional index As String = "")
     ESave.PutData "PART" & index, Part
@@ -94,6 +96,8 @@ Public Sub ReadSave()
             BGS.Create N.BGSn
             BGS.Play
         End If
+    Else
+        ReDim N.Roles(0)
     End If
 End Sub
 Public Function GetSpeakerName(Speaker As String) As String
@@ -174,39 +178,10 @@ Exec:
             Case "*weather"
                 WeatherLayer.ChangeWeather Params(1)
             Case "go"
-                Select Case Params(1)
-                    Case "snowstorm"
-                        CuLine = CuLine + 1
-                        MazePage.LoadMap "snowstorm"
-                        ECore.NewTransform transFallDark, 3000, "MazePage"
-                        Exit Sub
-                    Case "snowman"
-                        CuLine = CuLine + 1
-                        ECore.NewTransform transFallDark, 3000, "SnowmanPage"
-                        Exit Sub
-                    Case "mazesnow"
-                        CuLine = CuLine + 1
-                        MazePage.LoadMap "snow"
-                        ECore.NewTransform transFallDark, 3000, "MazePage"
-                        Exit Sub
-                    Case "maze"
-                        CuLine = CuLine + 1
-                        MazePage.LoadMap
-                        ECore.NewTransform transFallDark, 3000, "MazePage"
-                        Exit Sub
-                    Case "battle"
-                        CuLine = CuLine + 1
-                        ECore.NewTransform transFallDark, 3000, "BattlePage"
-                        Exit Sub
-                    Case "chess"
-                        CuLine = CuLine + 1
-                        ECore.NewTransform transFallDark, 3000, "TicTacToePage"
-                        Exit Sub
-                    Case "bxbattle"
-                        CuLine = CuLine + 1
-                        ECore.NewTransform transFallDark, 3000, "BXBattlePage"
-                        Exit Sub
-                End Select
+                CuLine = CuLine + 1
+                TipPage.ShowTip Params(1)
+                ECore.NewTransform transFallDark, 1000, "TipPage"
+                Exit Sub
             Case "***death"
                 SE.Play "Collapse4.mp3"
                 Call RepairSave(2)
@@ -257,6 +232,8 @@ Exec:
                 DisplayText = ""
                 N.Speaker = Params(1)
                 N.SpeakerName = GetSpeakerName(N.Speaker)
+                ReDim Preserve Historys(UBound(Historys) + 1)
+                Historys(UBound(Historys)) = N.SpeakerName & "：" & vbCrLf
             Case "clear"
                 DisplayText = ""
                 ECore.NewTransform
@@ -340,6 +317,7 @@ Exec:
                 DisplayText = DisplayText & NLines(CuLine) & vbCrLf
                 LLineTime = GetTickCount
             End If
+            Historys(UBound(Historys)) = Historys(UBound(Historys)) & NLines(CuLine) & vbCrLf
             CuLine = CuLine + 1
             Exit Sub
         End If
@@ -352,6 +330,7 @@ Exec:
     GoTo Exec
 End Sub
 Public Sub ReadNovel(Optional NoRun As Boolean = False)
+    ReDim Historys(0)
     
     Dim temp As String, Text As String
     
@@ -440,6 +419,10 @@ Public Sub DrawMsg()
     End If
     pro = Cubic(pro, 0, 1, 1, 1)
     
+    If AddPos <= Len(AddingText) Then
+        If GetTickCount - MsgTime >= 25 And AddingText <> "" Then DisplayText = DisplayText & Mid(AddingText, AddPos, 1): AddPos = AddPos + 1: MsgTime = GetTickCount
+    End If
+    
     Dim x As Long
     x = GW / 2
     For i = 1 To UBound(N.Roles)
@@ -448,35 +431,186 @@ Public Sub DrawMsg()
     
     x = x + 30
     
+    Dim DrawX As Long, DrawY As Long
+    Dim DW As Long, DH As Long, TH As Long
+    Dim DiaX As Long, DiaY As Long, RoleX As Long
     For i = 1 To UBound(N.Roles)
         If N.Roles(i).name = "bg" Then
-            Page.DrawImage N.Roles(i).name & "-" & N.Roles(i).Face & ".png", x - (Page.Res.ImgSize(N.Roles(i - 1).name & "-" & N.Roles(i - 1).Face & ".png", imgGetWidth) + 50) + 210, GH - 400, alpha:=IIf(N.Speaker <> N.Roles(i).name And Speaker <> "aside", 0.7, 1), Pos:=posOnBottom
+            DrawX = x - (Page.Res.ImgSize(N.Roles(i - 1).name & "-" & N.Roles(i - 1).Face & ".png", imgGetWidth) + 0) + 210
+            DrawY = GH - 400
         Else
-            Page.DrawImage N.Roles(i).name & "-" & N.Roles(i).Face & ".png", x, GH + 140 + IIf(N.Roles(i).name = "xl", -250, 0) + IIf(Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0), alpha:=IIf(N.Speaker <> N.Roles(i).name And Speaker <> "aside", 0.7, 1), Pos:=posOnBottom
-            x = x + (Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 50)
+            DrawX = x
+            DrawY = GH + 140 + IIf(N.Roles(i).name = "xl", -250, 0) + IIf(Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0)
+            x = x + (Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 0)
+        End If
+            Page.DrawImage N.Roles(i).name & "-" & N.Roles(i).Face & ".png", DrawX, DrawY, alpha:=IIf(N.Speaker <> N.Roles(i).name And Speaker <> "aside", 0.7, 1), Pos:=posOnBottom
+        If N.Roles(i).name = N.Speaker Then
+            RoleX = DrawX
+            DW = EF.GetWidth(Page.GG, DisplayText, 17, StringAlignmentNear, FontStyleRegular)
+            DH = EF.GetHeight(Page.GG, DisplayText, 17, StringAlignmentNear, FontStyleRegular)
+            TH = EF.GetHeight(Page.GG, N.SpeakerName, 18, StringAlignmentNear, FontStyleRegular)
+            DiaX = DrawX + (x - DrawX) / 3 * 2
+            DiaY = DrawY - Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetHeight) - DH - TH - 20
         End If
     Next
     
-    If AddPos <= Len(AddingText) Then
-        If GetTickCount - MsgTime >= 25 And AddingText <> "" Then DisplayText = DisplayText & Mid(AddingText, AddPos, 1): AddPos = AddPos + 1: MsgTime = GetTickCount
+    Dim CMode As Boolean, CModeX As Long
+    
+    If DiaX + DW + 40 + 20 > GW - 20 Then
+        CModeX = (GW - DW - 40 - 20 - 20) - DiaX
+        CMode = True
+        DiaX = GW - DW - 40 - 20 - 20
+    End If
+    If DiaY <= 20 Then
+        CMode = True
+        DiaY = 20
     End If
     
-    Page.DrawImage IIf(N.Speaker = "aside", "aside", "") & "dialog.png", GW / 2, GH - 130, alpha:=1, Pos:=posOnCenter
-    If CheckMouse2 = mMouseUp Then
-        If AddPos > Len(AddingText) Then
-            N.MsgEvent = ""
-            Call RunNovel
+    Dim Path As Long, DiaR As Long, DiaB As Long, Radius As Long
+    Dim BotX As Long
+    DiaR = DiaX + DW + 40 + 20
+    DiaB = DiaY + DH + 40 + TH + 8
+    Radius = 40
+    
+    If RoleX <= DiaR Then
+        BotX = DiaX + 20 + DW * 0.1 - CModeX
+    Else
+        BotX = DiaX + 20 + DW * 0.9
+    End If
+    
+    '==================================================================
+    '=                                                                =
+    '=                               B                                =
+    '=       A....╭──────────────────────────────────────────╮.....C        =
+    '=            │  ███▋                             │              =
+    '=            │  ▂▂▂▂▂▂▂▂▂                     │              =
+    '=       K....│  ▂▂▂▂▂▂▂▂▂▂▂▂▂               │.....D        =
+    '=            │  ▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂  ▼   │              =
+    '=       J....╰────────  ────────────────────────────────╯.....E        =
+    '=             I H....|/....G    F                                 =
+    '=                                                                 =
+    '===================================================================
+
+        GdipCreatePath FillModeWinding, Path
+    '===========================================================================
+    '   A
+        GdipAddPathArc Path, DiaX, DiaY, Radius, Radius, 180, 90
+    '===========================================================================
+    '   B
+        GdipAddPathLine Path, DiaX + Radius, DiaY, DiaR - Radius, DiaY
+    '===========================================================================
+    '   C
+        GdipAddPathArc Path, DiaR - Radius, DiaY, Radius, Radius, 270, 90
+    '===========================================================================
+    '   D
+        GdipAddPathLine Path, DiaR, DiaY + Radius, DiaR, DiaB - Radius
+    '===========================================================================
+    '   E
+        GdipAddPathArc Path, DiaR - Radius, DiaB - Radius, Radius, Radius, 0, 90
+    '===========================================================================
+    '   F
+        GdipAddPathLine Path, DiaR - Radius, DiaB, BotX + 20, DiaB
+    '===========================================================================
+    If RoleX <= DiaR Then
+        '===========================================================================
+        '   G
+            GdipAddPathLine Path, BotX + 20, DiaB, BotX, DiaB + 20
+        '===========================================================================
+        '   H
+            GdipAddPathLine Path, BotX, DiaB + 20, BotX, DiaB
+        '===========================================================================
+    Else
+        '===========================================================================
+        '   G
+            GdipAddPathLine Path, BotX + 20, DiaB, BotX + 20, DiaB + 20
+        '===========================================================================
+        '   H
+            GdipAddPathLine Path, BotX + 20, DiaB + 20, BotX, DiaB
+        '===========================================================================
+    End If
+    
+    '===========================================================================
+    '   I
+        GdipAddPathLine Path, BotX, DiaB, DiaX + Radius, DiaB
+    '===========================================================================
+    '   J
+        GdipAddPathArc Path, DiaX, DiaB - Radius, Radius, Radius, 90, 90
+    '===========================================================================
+    '   K
+        GdipAddPathLine Path, DiaX, DiaB - Radius, DiaX, DiaY + Radius
+        
+        GdipClosePathFigure Path
+    
+    Dim cPro As Single
+    cPro = (GetTickCount Mod 600) / 300
+    If cPro <= 1 Then
+        cPro = Cubic(cPro, 0, 0, 1, 1)
+    Else
+        cPro = Cubic(2 - cPro, 0, 1, 1, 1)
+    End If
+    
+    If DiaX <> 0 Then
+        GdipSetSolidFillColor ECore.pB, argb(IIf(CMode, 200, 255), 255, 255, 255)
+        GdipFillPath Page.GG, ECore.pB, Path
+        
+        Page.Writes N.SpeakerName, DiaX + 20, DiaY + 20, 18, argb(255, 0, 176, 240)
+        Page.Writes DisplayText, DiaX + 20, DiaY + 20 + TH + 8, 17, argb(255, 0, 0, 0)
+        
+        Page.DrawImage "continue.png", DiaR - 30, DiaB - 30 - 10 + 10 * cPro, alpha:=1 - 0.5 * cPro, Pos:=posOnCenter
+    End If
+    
+    GdipDeletePath Path
+    
+    'Page.DrawImage IIf(N.Speaker = "aside", "aside", "") & "dialog.png", GW / 2, GH - 130, alpha:=1, Pos:=
+    Dim BarPic As String, DiaColor As Long, DiaColor2 As Long
+    BarPic = "asidebar.png"
+    If DiaX = 0 Then
+        If N.Speaker = "me" Or N.Speaker = "aside" Then
+            DiaColor = argb(255, 32, 32, 32)
+            DiaColor2 = argb(255, 212, 212, 212)
+            BarPic = N.Speaker & "bar.png"
         Else
-            'Skip
-            SE.Play "Cursor.mp3"
-            If AddingText <> "" Then DisplayText = DisplayText & Mid(AddingText, AddPos, Len(AddingText) - AddPos)
-            AddPos = Len(AddingText)
-            ECore.NewTransform
+            DiaColor = argb(255, 232, 232, 232)
+            DiaColor2 = argb(255, 74, 74, 74)
+            BarPic = "darkbar.png"
         End If
     End If
     
-    Page.Writes DisplayText, GW / 2 - 300, GH - 190, 18, argb(200, 27, 27, 27)
-    If N.Speaker <> "aside" Then Page.Writes N.SpeakerName, GW / 2 - 5, GH - 78, 24, argb(255, 255, 255, 255), align:=StringAlignmentCenter
+    Page.Paint 0, 0, GH - 200, GW + 1, 201, IIf(BarPic = "darkbar.png", argb(255, 27, 27, 27), argb(255, 255, 255, 255))
+    
+    Page.DrawImage BarPic, 0, GH - 200, alpha:=1, Pos:=posOnBottom
+    
+    If DiaX <> 0 Then Page.Paint 0, 0, GH - 200, GW + 1, 201, argb(150, 0, 0, 0)
+    
+    Dim Hot As Long, Map() As Single
+    If BGM.IsPlaying Then
+        Map = BGM.GetMusicMap
+        For i = 0 To UBound(Map)
+            If i > 8 Then Exit For
+            Page.PaintLine GW / 2 - i * 20, GH - 100 - Map(i) / 1500 * 80, GW / 2 - i * 20, GH - 100 + Map(i) / 1500 * 80, DiaColor2, 2
+            Page.PaintLine GW / 2 + i * 20, GH - 100 - Map(i) / 1500 * 80, GW / 2 + i * 20, GH - 100 + Map(i) / 1500 * 80, DiaColor2, 2
+        Next
+    End If
+    
+    If DiaX = 0 Then
+        DH = EF.GetHeight(Page.GG, DisplayText, 18, StringAlignmentCenter, FontStyleRegular)
+        Page.Writes DisplayText, GW / 2, GH - 100 - DH / 2, 18, DiaColor, align:=StringAlignmentCenter
+        Page.Writes N.SpeakerName, GW / 2, GH - 228, 18, argb(255, 255, 255, 255), align:=StringAlignmentCenter
+        DW = EF.GetWidth(Page.GG, AddingText, 18, StringAlignmentCenter, FontStyleRegular)
+        Page.DrawImage "continue.png", GW / 2 + DW / 2 + 10, GH - 100 + DH / 2 - 10 * cPro, alpha:=1 - 0.5 * cPro, Pos:=posOnBottom
+    End If
+    
+    If CheckMouse(0, 0, GW, GH) = mMouseDown Then
+        Mouse.state = 0
+        If Mouse.button = 1 Then
+            Call NextDialog
+        ElseIf Mouse.button = 2 Then
+            Call ShowHistory
+        End If
+    End If
+    
+    'Page.Writes DisplayText, GW / 2 - 300, GH - 190, 18, argb(200, 27, 27, 27)
+    'If N.Speaker <> "aside" Then Page.Writes N.SpeakerName, GW / 2 - 5, GH - 78, 24, argb(255, 255, 255, 255), align:=StringAlignmentCenter
     
     If N.MsgEvent Like "ani+*" Then
         'Page.SwitchChannel MsgEvent, "Default"
@@ -486,11 +620,112 @@ Public Sub DrawMsg()
     If N.MsgEvent Like "*text:*" Then
         Page.Writes Split(N.MsgEvent, "text:")(1), GW / 2, 100 - 90 * pro, 48, argb(pro * 255, 255, 255, 255), align:=StringAlignmentCenter
     End If
+    
+    Page.DrawImage "xbtn.png", 20, 20, alpha:=1
+    If CheckMouse2 >= mMouseIn And Mouse.button = 1 Then Call ShowHistory
+    
+    Page.DrawImage "escbtn.png", 20, 140, alpha:=1
+    If CheckMouse2 >= mMouseIn And Mouse.button = 1 Then
+        Mouse.state = 0: Mouse.button = 0
+        ECore.NewTransform transDarkReturn, 1000, "MainPage"
+    End If
+End Sub
+Public Sub KeyUp(KeyCode As Integer)
+    If (KeyCode = vbKeyZ Or KeyCode = vbKeyReturn) And N.mode = "msg" Then
+        NovelPage.NextDialog
+    End If
+    If (KeyCode = vbKeyEscape) And N.mode = "msg" Then
+        ECore.NewTransform transDarkReturn, 1000, "MainPage"
+    End If
+    If KeyCode = vbKeyX And N.mode <> "his" Then
+        NovelPage.ShowHistory
+        Exit Sub
+    End If
+    If (KeyCode = vbKeyX Or KeyCode = vbKeyEscape) And N.mode = "his" Then
+        NovelPage.CancelHistory
+    End If
+End Sub
+Public Sub NextDialog()
+    If N.mode = "question" Then Exit Sub
+    If AddPos >= Len(AddingText) Then
+        N.MsgEvent = ""
+        Call RunNovel
+    Else
+        'Skip
+        SE.Play "Cursor1.mp3"
+        If AddingText <> "" Then DisplayText = DisplayText & Mid(AddingText, AddPos, Len(AddingText) - AddPos)
+        AddPos = Len(AddingText)
+        'ECore.NewTransform
+    End If
+End Sub
+Public Sub ShowHistory()
+    If N.mode = "his" Then Exit Sub
+    
+    SE.Play "Cancel.mp3"
+    LastMode = N.mode
+    HistoryIndex = UBound(Historys)
+    N.mode = "his"
+    QuesTime = GetTickCount
+    PaintDC Page.CDC, ODC, 0, 0, alpha:=1
+    BlurTo BlurDC, GDC, GameWindow
+End Sub
+Public Sub DrawHistory()
+    Dim pro As Single, pro2 As Single, pro3 As Single
+    pro = (GetTickCount - QuesTime) / 2000
+    pro = 1 - pro
+    If pro < 0 Then pro = 0
+    pro = Cubic(pro, 0, 0, 0, 1)
+
+    PaintDC ODC, Page.CDC, 0, 0, alpha:=pro * 1
+    PaintDC BlurDC, Page.CDC, 0, 0, alpha:=1 - pro
+
+    pro2 = (1 - pro) / 0.5
+    If pro2 > 1 Then pro2 = 1
+    
+    Page.Paint 2, GW / 2, GH - pro2 * GH / 2, pro2 * 600, pro2 * 400, argb(255 - pro2 * 80, 255, 255, 255), Radius:=300 - pro2 * 300, Pos:=posOnCenter
+    
+    pro3 = (1 - pro - 0.5) / 0.5
+    If pro3 < 0 Then pro3 = 0
+    
+    Dim DH As Long
+    DH = EF.GetHeight(Page.GG, Historys(HistoryIndex), 16, StringAlignmentCenter, FontStyleRegular)
+    
+    Page.Writes Historys(HistoryIndex), GW / 2, GH / 2 - DH / 2, 16, argb(255 * pro3, 32, 32, 32), align:=StringAlignmentCenter
+    
+    Page.Paint 2, GW / 2, GH / 2 + 185, 600, 40, argb(255 * pro3, 255, 255, 255), Pos:=posOnCenter
+
+    Page.Writes HistoryIndex & "/" & UBound(Historys), GW / 2, GH / 2 + 173, 16, argb(180 * pro3, 32, 32, 32), align:=StringAlignmentCenter
+    
+    Page.Paint 2, 0, GH - 50, GW + 1, 50, argb(180 * pro3, 255, 255, 255)
+    
+    Page.Writes "按Esc或右键退出", GW / 2, GH - 42, 18, argb(180 * pro3, 32, 32, 32), align:=StringAlignmentCenter
+    
+    If HistoryIndex < UBound(Historys) Then
+        If Page.ShowColorButton(1, GW - 100, GH / 2 - 30, 60, 60, ">", argb(255 * pro3, 255, 255, 255), argb(190 * pro3, 50, 202, 185), argb(255 * pro3, 50, 202, 185), Size:=24) = 3 Then
+            SE.Play "Cursor1.mp3"
+            HistoryIndex = HistoryIndex + 1
+        End If
+    End If
+    If HistoryIndex > 1 Then
+        If Page.ShowColorButton(1, 40, GH / 2 - 30, 60, 60, "<", argb(255 * pro3, 255, 255, 255), argb(190 * pro3, 50, 202, 185), argb(255 * pro3, 50, 202, 185), Size:=24) = 3 Then
+            SE.Play "Cursor1.mp3"
+            HistoryIndex = HistoryIndex - 1
+        End If
+    End If
+    
+    If CheckMouse(0, 0, GW, GH) = mMouseDown And Mouse.button = 2 Then
+        Mouse.state = 0
+        Call CancelHistory
+    End If
+End Sub
+Public Sub CancelHistory()
+    If N.mode <> "his" Then Exit Sub
+    N.mode = LastMode: SE.Play "Cancel.mp3": ECore.NewTransform
 End Sub
 Public Sub DrawScroll()
     Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(170, 0, 0, 0)
     If CheckMouse(0, 0, GW, GH) = mMouseUp Then
-        Call RunNovel: SE.Play "Cursor.mp3"
+        Call RunNovel: SE.Play "Cursor1.mp3"
     End If
     
     Dim Lines() As String, pro As Single
@@ -515,34 +750,56 @@ Public Sub Update()
     If N.BG <> "" Then Page.DrawImage N.BG, 0, 0, alpha:=1
     If N.FG <> "" Then Page.DrawImage N.FG, 0, 0, alpha:=1
     
-    If SaveTime <> 0 Then
-        Page.Clear argb(255, 27, 27, 27)
-        Page.ShowLoading GW / 2 - 64, GH / 2 - 64, 128, 128, 3, argb(255, 0, 176, 240), argb(255, 254, 84, 57), argb(255, 255, 255, 255)
-        Page.Writes "你的存档已经保存", GW / 2, GH - 190, 20, argb(255, 242, 242, 242), align:=StringAlignmentCenter
-        Page.Writes "Tips：死亡时你将会回到最近一个更改你时间线的分支。", GW / 2, GH - 50, 20, argb(180, 242, 242, 242), align:=StringAlignmentCenter
-        If GetTickCount - SaveTime >= 5000 Then
-            ECore.NewTransform transFadeIn, 1000
-            SaveTime = 0
-        End If
-        Exit Sub
-    End If
-    
     If N.mode = "msg" Then
         Call DrawMsg
     ElseIf N.mode = "scroll" Then
         Call DrawScroll
     ElseIf N.mode = "question" Then
         Call DrawQues
+    ElseIf N.mode = "his" Then
+        Call DrawHistory
     End If
     
     If BGM.PlayState = musStopped And BGM.length <> 0 Then BGM.Play
     If BGS.PlayState = musStopped And BGS.length <> 0 Then BGS.Play
+    
+    If SaveTime <> 0 Then
+        'Page.Clear argb(255, 27, 27, 27)
+        Dim pro As Single
+        pro = 1
+        If GetTickCount - SaveTime <= 1000 Then
+            pro = Cubic((GetTickCount - SaveTime) / 1000, 0, 0, 1, 1)
+        ElseIf GetTickCount - SaveTime >= 2000 And GetTickCount - SaveTime <= 2500 Then
+            pro = Cubic(1 - (GetTickCount - SaveTime - 2000) / 500, 0, 1, 1, 1)
+        End If
+        
+        Page.Paint 2, GW / 2, pro * 160 - 60, 400, 60, argb(pro * 255, 255, 255, 255), 250, Pos:=posOnCenter
+        
+        If SaveSndMark = False And GetTickCount - SaveTime >= 1500 Then
+            SE.Play "SaveDone.wav"
+            SaveSndMark = True
+        End If
+        
+        If GetTickCount - SaveTime <= 1500 Then
+            Page.ShowLoading GW / 2 - 200 + 20, pro * 160 - 75, 30, 30, 3, argb(pro * 255, 0, 176, 240), argb(pro * 255, 254, 84, 57), argb(pro * 255, 255, 255, 255)
+            Page.Writes "正在保存你的存档...", GW / 2, pro * 160 - 60 - 12, 18, argb(pro * 255, 64, 64, 64), align:=StringAlignmentCenter
+        Else
+            Page.Paint 1, GW / 2 - 200 + 20, pro * 160 - 75, 30, 30, argb(pro * 255, 9, 241, 117)
+            Page.Writes "你的存档已经保存", GW / 2, pro * 160 - 60 - 12, 18, argb(pro * 255, 64, 64, 64), align:=StringAlignmentCenter
+        End If
+        
+        If GetTickCount - SaveTime >= 2500 Then
+            SaveSndMark = False
+            SaveTime = 0
+        End If
+        'Exit Sub
+    End If
 End Sub
 Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, msg As String)
+Public Sub AnimationMsg(id As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -557,7 +814,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(ID As Integer)
+Public Sub AnimationDone(id As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub
@@ -572,6 +829,7 @@ Private Sub Class_Initialize()
     Page.Res.NewImages App.Path & "\assets\bg", 1000, 740
     Page.Res.NewImages App.Path & "\assets\fg", 1000, 740
     Page.Res.NewImages App.Path & "\assets\ui", 0.68
+    Page.Res.NewImages App.Path & "\assets\dialog", 1000 / 1520
     Page.Res.NewImages App.Path & "\assets\face"
     Page.Res.NewImages App.Path & "\assets\animation"
     

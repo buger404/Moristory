@@ -34,14 +34,21 @@ Private Sub DrawTimer_Timer()
     
 End Sub
 
-Private Sub Form_KeyDown(keycode As Integer, Shift As Integer)
+Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
     'BXBattlePage.KeyDown KeyCode
-    If ECore.ActivePage = "MazePage" Then MazePage.KeyDown keycode
+
 End Sub
 
 Private Sub Form_KeyPress(KeyAscii As Integer)
     '·¢ËÍ×Ö·ûÊäÈë
     If TextHandle <> 0 Then WaitChr = WaitChr & Chr(KeyAscii)
+End Sub
+
+Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
+    If ECore.ActivePage = "MazePage" Then MazePage.KeyDown KeyCode
+    If ECore.ActivePage = "NovelPage" Then
+        NovelPage.KeyUp KeyCode
+    End If
 End Sub
 
 Private Sub Form_Load()
@@ -78,6 +85,7 @@ Private Sub Form_Load()
         Set TicTacToePage = New TicTacToePage
         Set BXBattlePage = New BXBattlePage
         Set SnowmanPage = New SnowmanPage
+        Set TipPage = New TipPage
         Set WeatherLayer = New WeatherLayer
     '=============================================
 

@@ -21,6 +21,7 @@ Attribute VB_Exposed = False
     Dim StartX As Long, StartY As Long, EndX As Long, EndY As Long
     Dim XRemain As Single, YRemain As Single
     Dim MapDC As Long, CoverDC As Long
+    Dim MapViewDC As Long
     Dim Direction As Long, MapNames As String
 '=====================================
     'Snowstorm
@@ -54,6 +55,12 @@ Public Sub LoadMap(Optional MapName As String = "")
     Page.Res.newImage App.Path & "\assets\ui\shadow.png", GW, GH
     Image = Page.Res.ResourceImageHandle(Page.Res.GetImage("maze" & MapName & ".png"))
     GdipGetImageWidth Image, W: GdipGetImageHeight Image, h
+    
+    If MapDC <> 0 Then DeleteObject MapDC
+    If CoverDC <> 0 Then DeleteObject CoverDC
+    If MapViewDC <> 0 Then DeleteObject MapViewDC
+    
+    MapViewDC = CreateCDC(W, h)
     
     MapDC = CreateCDC(W * 90, h * 90 + 90)
     CoverDC = CreateCDC(W * 90, h * 90 + 90)
@@ -144,7 +151,7 @@ Public Sub Update()
     If pro < 0 Then pro = 0
     If pro > 1 Then pro = 1
     
-    Dim Walking As Boolean
+    Dim Walking As Boolean, DrawMap As Boolean
     
     If XRemain <> 0 Then
         If Abs(XRemain) < 0.1 Then
@@ -152,6 +159,7 @@ Public Sub Update()
                 FX(i) = FX(i + 1): FY(i) = FY(i + 1)
             Next
             XRemain = 0: PX = Round(PX)
+            DrawMap = True
         Else
             PX = PX + IIf(XRemain < 0, -0.05, 0.05)
             XRemain = XRemain - IIf(XRemain < 0, -0.05, 0.05)
@@ -166,6 +174,7 @@ Public Sub Update()
                 FX(i) = FX(i + 1): FY(i) = FY(i + 1)
             Next
             YRemain = 0: PY = Round(PY)
+            DrawMap = True
         Else
             PY = PY + IIf(YRemain < 0, -0.05, 0.05)
             YRemain = YRemain - IIf(YRemain < 0, -0.05, 0.05)
@@ -196,6 +205,32 @@ Public Sub Update()
     Dim HuaIndex As Integer
     HuaIndex = Page.Res.GetImage("black" & MapNames & ".png")
     
+    Dim MapW As Long, MapH As Long
+    MapW = UBound(Map, 1) + 1
+    MapH = UBound(Map, 2) + 1
+    
+    If DrawMap Then
+        For x = PX - 2 To PX + 2
+            For y = PY - 2 To PY + 2
+                If x >= 0 And x <= MapW - 1 And y >= 0 And y <= MapH - 1 Then
+                    If Map(x, y) = HuaIndex Then
+                        SetPixel MapViewDC, x, y - 1, RGB(255, 0, 0)
+                    Else
+                        SetPixel MapViewDC, x, y - 1, RGB(255, 255, 255)
+                    End If
+                End If
+            Next
+        Next
+    End If
+    
+    Page.Paint 0, 40, 40, MapW * 3 - 2, MapH * 3 - 4, argb(255, 255, 255, 255), Size:=2, style:=1
+    StretchBlt Page.CDC, 42, 42, MapW * 3, MapH * 3, MapViewDC, 0, 0, MapW, MapH, vbSrcCopy
+    Page.Paint 0, 42 + PX * 3, 42 + PY * 3 - 3, 7, 7, argb(255, 0, 176, 240)
+    Page.Paint 0, 42 + EndX * 3, 42 + EndY * 3 - 3, 7, 7, argb(255, 0, 255, 0)
+    Page.Paint 0, 42 - 3, 250, 20, 20, argb(255, 0, 255, 0)
+    Page.Writes "终点", 42 + 30 + 0, 249, 16, argb(255, 255, 255, 255)
+    Page.Paint 0, 42 + 90 - 3, 250, 20, 20, argb(255, 0, 176, 240)
+    Page.Writes "你的位置", 42 + 90 + 30 + 0, 249, 16, argb(255, 255, 255, 255)
     DarkX = IIf(Abs(PX - FX(0)) < 2 And pro = 0, 0, FX(0)): DarkY = IIf(Abs(PY - FY(0)) < 2 And pro = 0, 0, FY(0))
     If pro > 0 Then
         DarkX = PX - 5
@@ -501,10 +536,10 @@ Remove:
     Dim HuaIndex As Integer
     HuaIndex = Page.Res.GetImage("black" & MapNames & ".png")
     
-    If IsKeyPress(VK_UP) And Map(Round(PX), Round(PY - 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then YRemain = -0.2: Direction = 0
-    If IsKeyPress(VK_DOWN) And Map(Round(PX), Round(PY + 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then YRemain = 0.2: Direction = 3
-    If IsKeyPress(VK_LEFT) And Map(Round(PX - 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then XRemain = -0.2: Direction = 6
-    If IsKeyPress(VK_RIGHT) And Map(Round(PX + 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 Then XRemain = 0.2: Direction = 9
+    If IsKeyPress(VK_UP) And Map(Round(PX), Round(PY - 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 And Not (Round(PX) = EndX And Round(PY - 1) = EndY) Then YRemain = -0.2: Direction = 0
+    If IsKeyPress(VK_DOWN) And Map(Round(PX), Round(PY + 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 And Not (Round(PX) = EndX And Round(PY + 1) = EndY) Then YRemain = 0.2: Direction = 3
+    If IsKeyPress(VK_LEFT) And Map(Round(PX - 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 And Not (Round(PX - 1) = EndX And Round(PY) = EndY) Then XRemain = -0.2: Direction = 6
+    If IsKeyPress(VK_RIGHT) And Map(Round(PX + 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 And Not (Round(PX + 1) = EndX And Round(PY) = EndY) Then XRemain = 0.2: Direction = 9
     
     If BGM.PlayState = musStopped And BGM.length <> 0 And DIEMark = False Then BGM.Play: ATKIndex = 1
     If BGS.PlayState = musStopped And BGS.length <> 0 Then BGS.Play
@@ -552,7 +587,7 @@ Remove:
     Page.Writes Hp & "/" & MaxHp, GW - 160 - 80, 61, 18, argb(255, 255, 255, 255), 300, 25, StringAlignmentNear, FontStyleItalic
     
     Page.DrawImage "mpbar.png", GW / 2, GH - 14, cw:=MP / MaxMP * GW, alpha:=1, Pos:=posOnCenter
-    Page.Writes "MP     " & MP & "/" & MaxMP, GW / 2, GH - 50, 18, argb(255, 255, 255, 255), 0, 0, StringAlignmentCenter, FontStyleBold
+    Page.Writes "AP     " & MP & "/" & MaxMP, GW / 2, GH - 50, 18, argb(255, 255, 255, 255), 0, 0, StringAlignmentCenter, FontStyleBold
     
     Page.Paint 2, GW / 2, GH - 105, EF.GetWidth(Page.GG, Says, 18, StringAlignmentCenter, FontStyleRegular) + 80, 40, argb(128, 0, 0, 0), 80, Pos:=posOnCenter
     Page.Writes Says, GW / 2, GH - 105 - 14, 18, argb(255, 255, 255, 255), align:=StringAlignmentCenter
@@ -608,7 +643,7 @@ Public Sub KeyDown(Code As Integer)
     
     If Code = vbKeyZ And CanAtk And MP >= 3 Then
         Dim ATK As Long
-        ATK = 4 + Int(Rnd * 2 - 1)
+        ATK = 6 + Int(Rnd * 3 - 1)
         If XLMode = 2 Or XLMode = 5 Or XLMode = 7 Then ATK = ATK * 0.75
         UHP = UHP - ATK
         MP = MP - 3
@@ -685,7 +720,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, msg As String)
+Public Sub AnimationMsg(id As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -702,7 +737,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(ID As Integer)
+Public Sub AnimationDone(id As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

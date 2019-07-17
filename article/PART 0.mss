@@ -4,6 +4,7 @@
 *bgm\OST 26 - Reminiscence.mp3
 *bg\Meadow.png
 *fg\Forest.png
+go\novel
 包围着植物的行星，滋润在圣光之下。
 行星上居住着不同于地球的生物——天使。
  
