@@ -117,7 +117,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(id As String, msg As String)
+Public Sub AnimationMsg(ID As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -136,7 +136,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(id As Integer)
+Public Sub AnimationDone(ID As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

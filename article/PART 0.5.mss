@@ -1,5 +1,5 @@
 #这不是你应该看的文件。
-*title\起源
+*title\一切拜托你了
 *bgm\OST 11 - Heartbeat.mp3
 *mode\scroll
 *bg\startscence

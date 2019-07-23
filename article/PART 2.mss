@@ -1,5 +1,5 @@
 #这不是你应该看的文件。
-*title\过往
+*title\用冷漠对待热情
 *bgm\OST 4 - Garden Party.mp3
 *mode\msg
 *bg\garden.jpg
@@ -213,6 +213,7 @@ say\xx
 “你你你。。。你什么啦！”
 say\bm
 “你后面的裙子。。。”
+face\bm\bloodlove
 两道鼻血悄无声息地流了下来。
 say\aside
 兮兮转头一看，发现它的裙子掀起来了。
@@ -223,6 +224,7 @@ face\xx\slove
 兮兮迅速拉好裙子然后捂住脸，
 “呀~”的一声跑走了。
 *bgm\
+face\bm\slove
 role\xx\remove
 say\me
 “黑嘴。。。。？”

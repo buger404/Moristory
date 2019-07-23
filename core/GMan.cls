@@ -18,8 +18,8 @@ Private Type Page
     name As String
 End Type
 Private Type Transform
-    kind As TranslationKind
-    time As Long
+    Kind As TranslationKind
+    Time As Long
     during As Long
 End Type
 Dim Pages() As Page, Transform As Transform
@@ -28,7 +28,10 @@ Dim OutOfWindow As Boolean
 Dim FirstPlay As Boolean
 Public CDC As Long, ODC As Long, GG As Long, pB As Long
 Public LastPage As String
+Public UpdatingPage As String, LockPage As String
+Dim CurrentPage As Integer
 Dim IsLayered As Boolean
+Dim ErrorMark As Boolean, ErrorMark2 As Boolean
 '========================================================
 '   Init
     Private Sub Class_Initialize()
@@ -87,6 +90,8 @@ Dim IsLayered As Boolean
 '========================================================
 '   Draw
     Public Sub Display()
+        If ErrorMark2 Then Exit Sub
+
         Dim o As Boolean, t As Long, played As Boolean
         
         t = Timer * 1000
@@ -105,8 +110,12 @@ Dim IsLayered As Boolean
         End If
 
         For i = 1 To UBound(Pages)
-            If ActivePage = Pages(i).name Or Pages(i).p.TopPage Then
-                Pages(i).p.Update: Pages(i).p.Display (CDC)
+            CurrentPage = i
+            If ActivePage = Pages(i).name Or (Pages(i).p.TopPage And (Not ErrorMark)) Then
+                UpdatingPage = Pages(i).name
+                Pages(i).p.Update
+                Pages(i).p.Display (CDC)
+                If Pages(i).name = "ErrorScreen" Then ErrorMark2 = True
                 played = True
                 o = (GetActiveWindow = 0)
                 If o <> OutOfWindow Then
@@ -126,7 +135,7 @@ skipPage:
             EF.Writes "Ò³Ãæ""" & ActivePage & """²»´æÔÚ", GW / 2, GH / 2, GG, argb(255, 27, 27, 27), 20, 0, 0, StringAlignmentCenter, FontStyleBold
         End If
         
-        If GetTickCount - Transform.time <= Transform.during Then Call Translation
+        If GetTickCount - Transform.Time <= Transform.during Then Call Translation
         
         If IsLayered Then
             Dim bs As BLENDFUNCTION, sz As Size
@@ -137,7 +146,7 @@ skipPage:
                 .BlendOp = AC_SRC_OVER
                 .SourceConstantAlpha = 255
             End With
-            sz.cx = GW: sz.cy = GH
+            sz.CX = GW: sz.CY = GH
             'UpdateLayeredWindow GHwnd, 0, ByVal 0, Sz, CDC, ByVal 0, 0, Bs, ULW_ALPHA
             UpdateLayeredWindow GHwnd, GDC, ByVal 0&, sz, CDC, SrcPoint, 0, bs, &H2
         Else
@@ -157,15 +166,16 @@ skipPage:
         End If
         
         If Mouse.state = 2 Then Mouse.state = 0
+        
     End Sub
 '========================================================
 '   Transform
-    Public Sub NewTransform(Optional kind As TranslationKind = transFadeIn, Optional during As Long = 300, Optional newPage)
+    Public Sub NewTransform(Optional Kind As TranslationKind = transFadeIn, Optional during As Long = 300, Optional newPage)
         PaintDC CDC, ODC
         With Transform
             .during = during
-            .kind = kind
-            .time = GetTickCount
+            .Kind = Kind
+            .Time = GetTickCount
         End With
         
         If Not IsMissing(newPage) Then
@@ -174,39 +184,39 @@ skipPage:
     End Sub
     Private Sub Translation()
         Dim pro As Single
-        Select Case Transform.kind
+        Select Case Transform.Kind
             Case 0 'FadeIn
-                pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
+                pro = Cubic((GetTickCount - Transform.Time) / Transform.during, 0, 1, 1, 1)
                 PaintDC ODC, CDC, alpha:=1 - pro
             Case 1 'FadeOut
-                pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 0, 0, 1)
+                pro = Cubic((GetTickCount - Transform.Time) / Transform.during, 0, 0, 0, 1)
                 PaintDC ODC, CDC, alpha:=1 - pro
             Case 2 'ToRight
-                pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
+                pro = Cubic((GetTickCount - Transform.Time) / Transform.during, 0, 1, 1, 1)
                 PaintDC ODC, CDC, (pro * GW), alpha:=1
             Case 3 'ToLeft
-                pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
+                pro = Cubic((GetTickCount - Transform.Time) / Transform.during, 0, 1, 1, 1)
                 PaintDC ODC, CDC, -(pro * GW), alpha:=1
             Case 4 'ToUp
-                pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
+                pro = Cubic((GetTickCount - Transform.Time) / Transform.during, 0, 1, 1, 1)
                 PaintDC ODC, CDC, 0, -(pro * GW), alpha:=1
             Case 5 'ToDown
-                pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
+                pro = Cubic((GetTickCount - Transform.Time) / Transform.during, 0, 1, 1, 1)
                 PaintDC ODC, CDC, 0, (pro * GW), alpha:=1
             Case 6 'ToRight(Fade)
-                pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
+                pro = Cubic((GetTickCount - Transform.Time) / Transform.during, 0, 1, 1, 1)
                 PaintDC ODC, CDC, (pro * GW), alpha:=1 - pro
             Case 7 'ToLeft(Fade)
-                pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
+                pro = Cubic((GetTickCount - Transform.Time) / Transform.during, 0, 1, 1, 1)
                 PaintDC ODC, CDC, -(pro * GW), alpha:=1 - pro
             Case 8 'ToUp(Fade)
-                pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
+                pro = Cubic((GetTickCount - Transform.Time) / Transform.during, 0, 1, 1, 1)
                 PaintDC ODC, CDC, 0, -(pro * GW), alpha:=1 - pro
             Case 9 'ToDown(Fade)
-                pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
+                pro = Cubic((GetTickCount - Transform.Time) / Transform.during, 0, 1, 1, 1)
                 PaintDC ODC, CDC, 0, (pro * GW), alpha:=1 - pro
             Case 10 'HighLight
-                pro = (GetTickCount - Transform.time) / Transform.during
+                pro = (GetTickCount - Transform.Time) / Transform.during
                 Select Case pro
                     Case Is < 0.2
                         pro = Cubic(pro / 0.2, 0, 1, 1, 1)
@@ -221,7 +231,7 @@ skipPage:
                         GdipFillRectangle GG, pB, 0, 0, GW, GH
                 End Select
             Case 11 'Dark
-                pro = (GetTickCount - Transform.time) / Transform.during
+                pro = (GetTickCount - Transform.Time) / Transform.during
                 Select Case pro
                     Case Is < 0.2
                         pro = Cubic(pro / 0.2, 0, 1, 1, 1)
@@ -236,7 +246,7 @@ skipPage:
                         GdipFillRectangle GG, pB, 0, 0, GW, GH
                 End Select
             Case 12
-                pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
+                pro = Cubic((GetTickCount - Transform.Time) / Transform.during, 0, 1, 1, 1)
                 BitBlt CDC, GW - (pro * GW), 0, GW, GH, CDC, 0, 0, vbSrcCopy
                 GdipSetSolidFillColor pB, argb((1 - pro) * 255, 0, 0, 0)
                 GdipFillRectangle GG, pB, GW - (pro * GW), 0, GW, GH
@@ -244,13 +254,30 @@ skipPage:
                 GdipSetSolidFillColor pB, argb(pro * 255, 0, 0, 0)
                 GdipFillRectangle GG, pB, -(pro * GW), 0, GW, GH
             Case 13
-                pro = Cubic((GetTickCount - Transform.time) / Transform.during, 0, 1, 1, 1)
+                pro = Cubic((GetTickCount - Transform.Time) / Transform.during, 0, 1, 1, 1)
                 BitBlt CDC, -GW + (pro * GW), 0, GW, GH, CDC, 0, 0, vbSrcCopy
                 GdipSetSolidFillColor pB, argb((1 - pro) * 255, 0, 0, 0)
                 GdipFillRectangle GG, pB, -GW + (pro * GW), 0, GW, GH
                 PaintDC ODC, CDC, (pro * GW), 0, alpha:=1
                 GdipSetSolidFillColor pB, argb(pro * 255, 0, 0, 0)
                 GdipFillRectangle GG, pB, (pro * GW), 0, GW, GH
+            Case 14 'LightShake
+                pro = (GetTickCount - Transform.Time) / (Transform.during / 3)
+                Select Case pro
+                    Case Is < 0.2
+                        pro = Cubic(pro / 0.2, 0, 1, 1, 1)
+                        GdipSetSolidFillColor pB, argb(pro * 255, 255, 255, 255)
+                        GdipFillRectangle GG, pB, 0, 0, GW, GH
+                    Case Is < 0.8
+                        GdipSetSolidFillColor pB, argb(255, 255, 255, 255)
+                        GdipFillRectangle GG, pB, 0, 0, GW, GH
+                    Case Is < 1
+                        pro = Cubic((pro - 0.8) / 0.2, 0, 0, 0, 1)
+                        GdipSetSolidFillColor pB, argb((1 - pro) * 255, 255, 255, 255)
+                        GdipFillRectangle GG, pB, 0, 0, GW, GH
+                End Select
+                Randomize
+                BitBlt CDC, Int(Rnd * 16 - 8), Int(Rnd * 16 - 8), GW, GH, CDC, 0, 0, vbSrcCopy
         End Select
     End Sub
 '========================================================

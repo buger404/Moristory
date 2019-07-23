@@ -266,6 +266,8 @@ Exec:
                         ECore.NewTransform transHighLight, 600
                     Case "dark"
                         ECore.NewTransform transFallDark, 600
+                    Case "lightshake"
+                        ECore.NewTransform 14, 3000
                 End Select
             Case "bg"
                 Dim temp() As String
@@ -290,6 +292,8 @@ Exec:
                 If N.MsgEvent Like "ani+*" Then
                     Page.SwitchChannel N.MsgEvent, "Default"
                 End If
+            Case "event"
+                N.MsgEvent = Params(1)
         End Select
     ElseIf Left(NLines(CuLine), 1) <> "#" Then
         If JumpTimeline Then CuLine = CuLine + 1: GoTo Exec
@@ -317,7 +321,7 @@ Exec:
                 DisplayText = DisplayText & NLines(CuLine) & vbCrLf
                 LLineTime = GetTickCount
             End If
-            Historys(UBound(Historys)) = Historys(UBound(Historys)) & NLines(CuLine) & vbCrLf
+            If CuLine <> 0 Then Historys(UBound(Historys)) = Historys(UBound(Historys)) & NLines(CuLine) & vbCrLf
             CuLine = CuLine + 1
             Exit Sub
         End If
@@ -388,10 +392,10 @@ Public Sub DrawQues()
                 TimeLine = Ques.Answers(i).JTimeLine: ESave.PutData "TIMELINE", TimeLine
             End If
             
-            For s = 1 To UBound(N.Roles)
-                If N.Roles(s).name = N.Speaker Then
-                    N.Roles(s).Love = N.Roles(s).Love + Ques.Answers(i).LoveIncrase
-                    ESave.PutData N.Roles(s).name & "'s love", N.Roles(s).Love
+            For S = 1 To UBound(N.Roles)
+                If N.Roles(S).name = N.Speaker Then
+                    N.Roles(S).Love = N.Roles(S).Love + Ques.Answers(i).LoveIncrase
+                    ESave.PutData N.Roles(S).name & "'s love", N.Roles(S).Love
                     If Ques.Answers(i).LoveIncrase > 0 Then
                         N.MsgEvent = "ani+ballon_love"
                     ElseIf Ques.Answers(i).LoveIncrase < 0 Then
@@ -419,29 +423,35 @@ Public Sub DrawMsg()
     End If
     pro = Cubic(pro, 0, 1, 1, 1)
     
+    'Debug.Print Now, N.MsgEvent
+    If N.MsgEvent Like "pic+*" Then
+        Page.DrawImage Split(N.MsgEvent, "pic+")(1), 0, 0
+    End If
+    
     If AddPos <= Len(AddingText) Then
         If GetTickCount - MsgTime >= 25 And AddingText <> "" Then DisplayText = DisplayText & Mid(AddingText, AddPos, 1): AddPos = AddPos + 1: MsgTime = GetTickCount
     End If
     
-    Dim x As Long
-    x = GW / 2
+    Dim X As Long
+    X = GW / 2
     For i = 1 To UBound(N.Roles)
-        If N.Roles(i).name <> "bg" Then x = x - (Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 50) / 2
+        If N.Roles(i).name <> "bg" Then X = X - (Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 50) / 2
     Next
     
-    x = x + 30
+    X = X + 30
     
     Dim DrawX As Long, DrawY As Long
     Dim DW As Long, DH As Long, TH As Long
     Dim DiaX As Long, DiaY As Long, RoleX As Long
     For i = 1 To UBound(N.Roles)
         If N.Roles(i).name = "bg" Then
-            DrawX = x - (Page.Res.ImgSize(N.Roles(i - 1).name & "-" & N.Roles(i - 1).Face & ".png", imgGetWidth) + 0) + 210
+            DrawX = X - (Page.Res.ImgSize(N.Roles(i - 1).name & "-" & N.Roles(i - 1).Face & ".png", imgGetWidth) + 0) + 210
             DrawY = GH - 400
         Else
-            DrawX = x
-            DrawY = GH + 140 + IIf(N.Roles(i).name = "xl", -250, 0) + IIf(Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0)
-            x = x + (Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 0)
+            DrawX = X
+            DrawY = GH + 140 + IIf(N.Roles(i).name = "ssr", -200, 0) + IIf(N.Roles(i).name = "xl", -250, 0) + IIf(Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0)
+            
+            X = X + (Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 0)
         End If
             Page.DrawImage N.Roles(i).name & "-" & N.Roles(i).Face & ".png", DrawX, DrawY, alpha:=IIf(N.Speaker <> N.Roles(i).name And Speaker <> "aside", 0.7, 1), Pos:=posOnBottom
         If N.Roles(i).name = N.Speaker Then
@@ -449,7 +459,7 @@ Public Sub DrawMsg()
             DW = EF.GetWidth(Page.GG, DisplayText, 17, StringAlignmentNear, FontStyleRegular)
             DH = EF.GetHeight(Page.GG, DisplayText, 17, StringAlignmentNear, FontStyleRegular)
             TH = EF.GetHeight(Page.GG, N.SpeakerName, 18, StringAlignmentNear, FontStyleRegular)
-            DiaX = DrawX + (x - DrawX) / 3 * 2
+            DiaX = DrawX + (X - DrawX) / 3 * 2
             DiaY = DrawY - Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetHeight) - DH - TH - 20
         End If
     Next
@@ -576,7 +586,7 @@ Public Sub DrawMsg()
         End If
     End If
     
-    Page.Paint 0, 0, GH - 200, GW + 1, 201, IIf(BarPic = "darkbar.png", argb(255, 27, 27, 27), argb(255, 255, 255, 255))
+    Page.Paint 0, 0, GH - 200, GW + 1, 201, IIf(BarPic = "darkbar.png", argb(IIf(N.MsgEvent Like "pic+*", 120, 255), 27, 27, 27), argb(IIf(N.MsgEvent Like "pic+*", 120, 255), 255, 255, 255))
     
     Page.DrawImage BarPic, 0, GH - 200, alpha:=1, Pos:=posOnBottom
     
@@ -652,7 +662,7 @@ Public Sub NextDialog()
         Call RunNovel
     Else
         'Skip
-        SE.Play "Cursor1.mp3"
+        If Not CursorSndS Then SE.Play "Cursor1.mp3"
         If AddingText <> "" Then DisplayText = DisplayText & Mid(AddingText, AddPos, Len(AddingText) - AddPos)
         AddPos = Len(AddingText)
         'ECore.NewTransform
@@ -698,7 +708,7 @@ Public Sub DrawHistory()
     
     Page.Paint 2, 0, GH - 50, GW + 1, 50, argb(180 * pro3, 255, 255, 255)
     
-    Page.Writes "按Esc或右键退出", GW / 2, GH - 42, 18, argb(180 * pro3, 32, 32, 32), align:=StringAlignmentCenter
+    Page.Writes "按Esc或X或右键退出", GW / 2, GH - 42, 18, argb(180 * pro3, 32, 32, 32), align:=StringAlignmentCenter
     
     If HistoryIndex < UBound(Historys) Then
         If Page.ShowColorButton(1, GW - 100, GH / 2 - 30, 60, 60, ">", argb(255 * pro3, 255, 255, 255), argb(190 * pro3, 50, 202, 185), argb(255 * pro3, 50, 202, 185), Size:=24) = 3 Then
@@ -725,7 +735,8 @@ End Sub
 Public Sub DrawScroll()
     Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(170, 0, 0, 0)
     If CheckMouse(0, 0, GW, GH) = mMouseUp Then
-        Call RunNovel: SE.Play "Cursor1.mp3"
+        Call RunNovel
+        If Not CursorSndS Then SE.Play "Cursor1.mp3"
     End If
     
     Dim Lines() As String, pro As Single
@@ -747,7 +758,7 @@ Public Sub Update()
     '游戏每一帧的过程（绘制过程请放在此处）
     
     Page.Clear N.BGCOLOR  '清空画布
-    If N.BG <> "" Then Page.DrawImage N.BG, 0, 0, alpha:=1
+    If N.BG <> "" Then Page.DrawImage N.BG, 0, 0
     If N.FG <> "" Then Page.DrawImage N.FG, 0, 0, alpha:=1
     
     If N.mode = "msg" Then
@@ -799,7 +810,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(id As String, msg As String)
+Public Sub AnimationMsg(ID As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -814,7 +825,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(id As Integer)
+Public Sub AnimationDone(ID As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

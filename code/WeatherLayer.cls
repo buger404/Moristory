@@ -16,28 +16,99 @@ Attribute VB_Exposed = False
     Dim Page As GPage
     Public Weather As String
     Private Type Pos
-        x As Long
+        X As Long
         y As Long
         Pic As String
     End Type
     Dim Snow() As Pos
+    Public SetMode As Boolean, DMode As Boolean
 '======================================
+Public Sub SwitchDebug()
+    DMode = Not DMode
+    ECore.LockPage = IIf(DMode, "WeatherLayer", "")
+    SE.Play "Cancel.mp3"
+    If DMode Then ECore.NewTransform
+End Sub
+Public Sub SwitchSetting()
+    SetMode = Not SetMode
+    ECore.LockPage = IIf(SetMode, "WeatherLayer", "")
+    SE.Play "Cancel.mp3"
+    ECore.NewTransform
+End Sub
+Public Sub DrawSetting()
+    Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(100, 0, 0, 0)
+    
+    Page.Paint 2, GW / 2, GH / 2, 600, 400, argb(255, 255, 255, 255), 32, Pos:=posOnCenter
+    
+    Page.DrawImage "seticon.png", GW / 2, GH / 2 - 200, alpha:=1, Pos:=posOnCenter
+    
+    Dim data As Variant
+    data = BGM.Volume
+    Page.Writes "背景音乐", GW / 2 - 300 + 70, GH / 2 - 200 + 100, 18, argb(255, 27, 27, 27)
+    Page.ShowSliderBar data, "progress.png", GW / 2 - 300 + 200, GH / 2 - 200 + 108
+    If BGM.Volume <> data Then BGM.Volume = data: ESave.PutData "BGMVolume", data
+    
+    data = BGS.Volume
+    Page.Writes "环境音效", GW / 2 - 300 + 70, GH / 2 - 200 + 150, 18, argb(255, 27, 27, 27)
+    Page.ShowSliderBar data, "progress.png", GW / 2 - 300 + 200, GH / 2 - 200 + 158
+    If BGS.Volume <> data Then BGS.Volume = data: ESave.PutData "BGSVolume", data
+    
+    data = CursorSndS
+    Page.ShowColorCheckBox CursorSndS, GW / 2 - 300 + 70, GH / 2 - 200 + 208, 300, 20, "禁用鼠标音效", argb(255, 200, 200, 200), argb(255, 67, 238, 181), argb(255, 27, 27, 27), 18
+    If data <> CursorSndS Then ESave.PutData "CursorSndS", CursorSndS
 
+End Sub
+Public Sub DrawDebug()
+    Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(100, 0, 0, 0)
+    
+    Page.Paint 2, GW / 2, GH / 2, 600, 500, argb(255, 255, 255, 255), 32, Pos:=posOnCenter
+    
+    Dim Games(10) As String
+    Games(0) = "maze"
+    Games(1) = "battle"
+    Games(2) = "chess"
+    Games(3) = "bxbattle"
+    Games(4) = "mazesnow"
+    Games(5) = "snowman"
+    Games(6) = "snowstorm"
+    Games(7) = "novel"
+    Games(8) = "fly"
+    Games(9) = "mazecore"
+    Games(10) = "mazelake"
+    
+    Dim m As Long
+    
+    For i = 0 To UBound(Games)
+        Page.Paint 0, GW / 2 - 250, GH / 2 - 250 + 32 + i * 34, 500, 35, IIf(i Mod 2 = 0, argb(255, 240, 240, 240), argb(255, 255, 255, 255))
+        m = CheckMouse2
+        If m = mMouseUp Then
+            TipPage.ShowTip Games(i)
+            ECore.NewTransform transDarkTo, , "TipPage"
+            Call SwitchDebug
+        End If
+        Page.Writes Games(i), GW / 2 - 250 + 10, GH / 2 - 250 + 32 + 4 + i * 34, 18, argb(255, 27, 27, 27)
+        If m > 0 Then Page.Paint 0, GW / 2 - 250, GH / 2 - 250 + 32 + i * 34, 500, 35, argb(30, 0, 176, 240)
+    Next
+End Sub
 Public Sub Update()
     '游戏每一帧的过程（绘制过程请放在此处）
     
     Page.Clear 0 '清空画布
 
+    If SetMode Then Call DrawSetting
+    If DMode Then Call DrawDebug
+    
     Select Case Weather
         Case ""
         Case "snow": Call DrawSnow
         Case "snowstorm": Call DrawSnowStorm
+        Case "dark": Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(70, 10, 0, 0)
     End Select
     
 End Sub
 Public Sub RandomSnow(i As Integer)
     With Snow(i)
-        .x = Int(Rnd * GW)
+        .X = Int(Rnd * GW)
         .y = -90 - Int(Rnd * GH)
         .Pic = IIf(Int(Rnd * 2) = 0, "bigsnow.png", "smallsnow.png")
     End With
@@ -59,7 +130,7 @@ End Sub
 Public Sub DrawSnow()
     Dim i As Integer
     For i = 0 To UBound(Snow)
-        If Snow(i).y > 0 Then Page.DrawImage Snow(i).Pic, Snow(i).x, Snow(i).y, alpha:=1, Pos:=posOnCenter
+        If Snow(i).y > 0 Then Page.DrawImage Snow(i).Pic, Snow(i).X, Snow(i).y, alpha:=1, Pos:=posOnCenter
         Snow(i).y = Snow(i).y + 20 * IIf(i Mod 2 = 0, 1.5, 1)
         If Snow(i).y > GH Then Call RandomSnow(i)
     Next
@@ -69,11 +140,11 @@ Public Sub DrawSnowStorm()
     Dim i As Integer
     For i = 0 To UBound(Snow)
         If Snow(i).y > 0 Then
-            Page.DrawImage Snow(i).Pic, Snow(i).x, Snow(i).y, alpha:=1, Pos:=posOnCenter
+            Page.DrawImage Snow(i).Pic, Snow(i).X, Snow(i).y, alpha:=1, Pos:=posOnCenter
         End If
         Snow(i).y = Snow(i).y + 25 * IIf(i Mod 2 = 0, 1.5, 1)
-        Snow(i).x = Snow(i).x + 10 * IIf(i Mod 2 = 0, 1, 2)
-        If Snow(i).y > GH Then Call RandomSnow(i): Snow(i).x = Int(Rnd * GW * 2) - GW
+        Snow(i).X = Snow(i).X + 10 * IIf(i Mod 2 = 0, 1, 2)
+        If Snow(i).y > GH Then Call RandomSnow(i): Snow(i).X = Int(Rnd * GW * 2) - GW
     Next
 End Sub
 Public Sub Wheel(Direction As Integer, Depth As Single)
@@ -106,9 +177,12 @@ Private Sub Class_Initialize()
     '导入游戏资源
     Page.TopPage = True
     Page.Res.NewImages App.Path & "\assets\weather", 0.8
-    Page.Res.newImage App.Path & "\assets\ui\snowscreen.png", GW, GH
+    Page.Res.NewImages App.Path & "\assets\setui"
     '创建页面
     ECore.Add Page, "WeatherLayer"
+    If ESave.GetData("BGMVolume") <> "" Then BGM.Volume = Val(ESave.GetData("BGMVolume"))
+    If ESave.GetData("BGSVolume") <> "" Then BGS.Volume = Val(ESave.GetData("BGSVolume"))
+    If ESave.GetData("CursorSndS") <> "" Then CursorSndS = Val(ESave.GetData("CursorSndS"))
     
     '===============================================
     '   如果需要添加动画，请放置在此处

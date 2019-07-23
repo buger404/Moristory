@@ -1,5 +1,5 @@
 #这不是你应该看的文件。
-*title\跟踪狂
+*title\暴力总是潜伏在阴影之中
 *bgm\OST 11 - Heartbeat.mp3
 *mode\msg
 bg\255,255,255
@@ -489,7 +489,13 @@ face\xx\slove
 face\xx\closeeyes
 它将手十指交叉地放在胸前，微笑着闭上了眼睛。
 face\bm\closeeyes
+event\pic+xxkiss.png
+role\bm\remove
+role\xx\remove
 黑嘴离兮兮已经近到只能放下一根手指了。
+role\bm\add
+role\xx\add
+face\xx\closeeyes
 say\fj
 *play\cough.wav
 *bgm\OST 8 - Kindness.mp3

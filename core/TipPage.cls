@@ -24,9 +24,12 @@ Public Sub Update()
 
     Page.DrawImage "bg.png", 0, 0, alpha:=1
     
-    Page.Paint 0, GW / 2, GH / 2, 800, 500, argb(220, 255, 255, 255), Pos:=posOnCenter
-    Page.Paint 0, GW / 2 - 400, GH / 2 - 250, 800, 50, argb(255, 0, 190, 169)
-    Page.Writes "游戏正式开始", GW / 2, GH / 2 - 250 + 12, 18, argb(255, 27, 27, 27), align:=StringAlignmentCenter
+    Page.Paint 2, GW / 2, GH / 2, 800, 500, argb(220, 255, 255, 255), 36, Pos:=posOnCenter
+    'Page.Paint 0, GW / 2 - 400, GH / 2 - 250, 800, 50, argb(255, 0, 190, 169)
+    
+    Page.DrawImage "icon.png", GW / 2, GH / 2 - 250, alpha:=1, Pos:=posOnCenter
+    
+    'Page.Writes "游戏正式开始", GW / 2, GH / 2 - 250 + 12, 18, argb(255, 27, 27, 27), align:=StringAlignmentCenter
     
     Page.Writes "操作", GW / 2 - 400 + 40, GH / 2 - 250 + 90, 18, argb(255, 27, 27, 27), style:=FontStyleBold
     Page.Writes CtrlText, GW / 2 - 400 + 60 + 60, GH / 2 - 250 + 90, 18, argb(170, 27, 27, 27)
@@ -35,7 +38,7 @@ Public Sub Update()
     Page.Writes "规则", GW / 2 - 400 + 40, GH / 2 - 250 + 90 + 180, 18, argb(255, 27, 27, 27), style:=FontStyleBold
     Page.Writes RequireText, GW / 2 - 400 + 60 + 60, GH / 2 - 250 + 90 + 180, 18, argb(170, 27, 27, 27)
     
-    If Page.ShowColorButton(0, GW / 2 - 70, GH - 190, 140, 40, "好的", argb(255, 0, 0, 0), argb(255, 0, 190, 169), argb(255, 50, 202, 185), Size:=18) = 3 Then
+    If Page.ShowSimpleButton("btn.png", GW / 2 - 97, GH - 220, "好的", argb(255, 255, 255, 255), 18) = 3 Then
         Call GoGame
     End If
 End Sub
@@ -48,6 +51,12 @@ Public Sub GoGame()
             ECore.NewTransform transFallDark, 3000, "MazePage"
         Case "snowman"
             ECore.NewTransform transFallDark, 3000, "SnowmanPage"
+        Case "mazelake"
+            MazePage.LoadMap "lake"
+            ECore.NewTransform transFallDark, 3000, "MazePage"
+        Case "mazecore"
+            MazePage.LoadMap "core"
+            ECore.NewTransform transFallDark, 3000, "MazePage"
         Case "mazesnow"
             MazePage.LoadMap "snow"
             ECore.NewTransform transFallDark, 3000, "MazePage"
@@ -60,16 +69,18 @@ Public Sub GoGame()
             ECore.NewTransform transFallDark, 3000, "TicTacToePage"
         Case "bxbattle"
             ECore.NewTransform transFallDark, 3000, "BXBattlePage"
+        Case "fly"
+            ECore.NewTransform transToDownFade, 1000, "FlyPage"
     End Select
 End Sub
 Public Sub ShowTip(Game As String)
     MyGame = Game
     Select Case MyGame
         Case "novel"
-            CtrlText = "按Z或Enter，或点击窗口继续对话" & vbCrLf & "按X查看历史对话。"
+            CtrlText = "按Z或Enter，或点击窗口继续对话" & vbCrLf & "按X查看历史对话。" & vbCrLf & "按S打开游戏设置。"
             GoalText = "完成这个故事。"
-            RequireText = "确保自己不会死亡。" & vbCrLf & _
-                          "赢得角色们的好感。"
+            RequireText = "活下去。" & vbCrLf & _
+                          "赢得角色们的一致好感~"
         Case "snowstorm"
             CtrlText = "按键盘中的 ↑ ↓ ← → 操控你自己在地图上移动。" & vbCrLf & "按 Z 攻击雪狼，按 X 防御。"
             GoalText = "在自己的血量大于300的前提下，将雪狼的血量降到300以下。"
@@ -81,6 +92,14 @@ Public Sub ShowTip(Game As String)
             GoalText = "使雪人高度大于一定高度（云层高度）"
             RequireText = "按下鼠标后，雪球会持续增大。" & vbCrLf & _
                           "雪球大小如果比上一个雪球大小偏大，雪人将会倒塌。"
+        Case "mazelake"
+            CtrlText = "按键盘中的 ↑ ↓ ← → 操控你自己在地图上移动。"
+            GoalText = "达到地图中用绿色方块标注的终点。"
+            RequireText = "地图上将会记录你已经走过的地方。" & vbCrLf & "地图上的传送门将把你带去另一个地方。" & vbCrLf & "水流会把你冲走！"
+        Case "mazecore"
+            CtrlText = "按键盘中的 ↑ ↓ ← → 操控你自己在地图上移动。"
+            GoalText = "达到地图中用绿色方块标注的终点。"
+            RequireText = "地图上将会记录你已经走过的地方。" & vbCrLf & "地图上的传送门将把你带去另一个地方。"
         Case "mazesnow"
             CtrlText = "按键盘中的 ↑ ↓ ← → 操控你自己在地图上移动。"
             GoalText = "达到地图中用绿色方块标注的终点。"
@@ -103,16 +122,22 @@ Public Sub ShowTip(Game As String)
         Case "bxbattle"
             CtrlText = "移动鼠标接住攻击。"
             GoalText = "抵挡住所有攻击。"
-            RequireText = "你拥有三次失误的机会。" & vbCrLf & _
-                          "当目标进入窗口下部的黑色部分时才可以接住攻击。" & vbCrLf & _
-                          "只能接住白色矩形指示的一行中最下方的攻击。"
+            RequireText = "你的身体只能承受三次攻击。" & vbCrLf & _
+                          "能力有限，你只能接住距离你比较近的攻击，" & vbCrLf & "为了帮助你测量距离，我在可以接住的位置涂抹上了黑色矩形。" & vbCrLf & _
+                          "你只能接住距离你最近的攻击。"
+        Case "fly"
+            CtrlText = "按鼠标或键盘上的空格使芽子往上飞。"
+            GoalText = "安全通过所有障碍。"
+            RequireText = "你可以撞到柱子3次而安然无恙。" & vbCrLf & _
+                          "尽量不要去撞障碍物，很疼。" & vbCrLf & _
+                          "别让自己摔死了。"
     End Select
 End Sub
 Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(id As String, msg As String)
+Public Sub AnimationMsg(ID As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -127,7 +152,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(id As Integer)
+Public Sub AnimationDone(ID As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub
@@ -137,6 +162,7 @@ Private Sub Class_Initialize()
     Page.Create Me
     '导入游戏资源
     Page.Res.newImage App.Path & "\assets\bg\DarkSpace.png", GW, GH, "bg.png"
+    Page.Res.NewImages App.Path & "\assets\tipui"
     '创建页面
     ECore.Add Page, "TipPage"
     

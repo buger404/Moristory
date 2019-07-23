@@ -77,7 +77,7 @@ Public Sub Update()
     DeleteObject Rgn2
     
     Dim Img As Long, W As Long, h As Long, index As Integer
-    Dim x As Long, y As Long
+    Dim X As Long, y As Long
     Randomize
     For i = 1 To 5
         index = Page.Res.GetImage("star" & Int(Rnd * 5) & ".png")
@@ -86,10 +86,10 @@ Public Sub Update()
         h = Page.Res.ImgSize(index, imgGetHeight)
         
         Select Case Int(Rnd * 2)
-            Case 0: x = Int(Rnd * W) - W / 2: y = Int(Rnd * (GH + 400) - 200)
-            Case Else: x = GW - (Int(Rnd * W) - W / 2): y = Int(Rnd * (GH + 400) - 200)
+            Case 0: X = Int(Rnd * W) - W / 2: y = Int(Rnd * (GH + 400) - 200)
+            Case Else: X = GW - (Int(Rnd * W) - W / 2): y = Int(Rnd * (GH + 400) - 200)
         End Select
-        Page.DrawImage index, x, y, alpha:=1
+        Page.DrawImage index, X, y, alpha:=1
     Next
     Dim hi As Single
     hi = Hot / 30000
@@ -124,7 +124,7 @@ Public Sub Update()
         SE.Play "Load.mp3"
         LoadTime = GetTickCount
     End If
-    
+
     Dim bPro As Single
     If LoadTime <> 0 Then
         bPro = Cubic((GetTickCount - LoadTime) / 2000, 0, 1, 1, 1)
@@ -145,35 +145,16 @@ Public Sub Update()
         ECore.NewTransform transFadeIn, , "NovelPage"
     End If
     
-    Page.Writes "MORISTORY PREVIEW VERSION 717 POWERED BY EMERALD , MADE BY ERROR404 (QQ 1361778219) .", GW / 2, GH - 43, 16, argb(105, 255, 255, 255), align:=StringAlignmentCenter
+    Page.Writes "MORISTORY PREVIEW VERSION 719 POWERED BY EMERALD , MADE BY ERROR404 (QQ 1361778219) .", GW / 2, GH - 43, 16, argb(105, 255, 255, 255), align:=StringAlignmentCenter
     Page.Writes "游戏中所有音乐，音效和部分图片资源，均从网络免费正规渠道获取。", GW / 2, GH - 73, 16, argb(105, 255, 255, 255), align:=StringAlignmentCenter
 
-    Exit Sub
-    
-    If Page.ShowColorButton(0, GW / 2 - 50 - 100, GH / 2 - 30, 100, 60, "Snowman", argb(255, 255, 255, 255), argb(255, 0, 176, 240), argb(255, 0, 196, 255), Size:=18) = 3 Then
-        ECore.NewTransform transFadeIn, , "SnowmanPage"
-    End If
-    If Page.ShowColorButton(0, GW / 2 - 50 + 100, GH / 2 - 30, 100, 60, "TicTacToe", argb(255, 255, 255, 255), argb(255, 0, 176, 240), argb(255, 0, 196, 255), Size:=18) = 3 Then
-        ECore.NewTransform transFadeIn, , "TicTacToePage"
-    End If
-    If Page.ShowColorButton(0, GW / 2 - 50 + 100, GH / 2 + 60, 100, 60, "Maze", argb(255, 255, 255, 255), argb(255, 0, 176, 240), argb(255, 0, 196, 255), Size:=18) = 3 Then
-        MazePage.LoadMap "snow"
-        ECore.NewTransform transFadeIn, , "MazePage"
-    End If
-    If Page.ShowColorButton(0, GW / 2 - 50 - 100, GH / 2 + 60, 100, 60, "BXBattle", argb(255, 255, 255, 255), argb(255, 0, 176, 240), argb(255, 0, 196, 255), Size:=18) = 3 Then
-        ECore.NewTransform transFadeIn, , "BXBattlePage"
-    End If
-    If Page.ShowColorButton(0, GW / 2 - 50 + 100, GH / 2 + 120, 100, 60, "SNOWSTORM", argb(255, 255, 255, 255), argb(255, 0, 176, 240), argb(255, 0, 196, 255), Size:=18) = 3 Then
-        MazePage.LoadMap "snowstorm"
-        ECore.NewTransform transFadeIn, , "MazePage"
-    End If
 End Sub
 
 Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(id As String, msg As String)
+Public Sub AnimationMsg(ID As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -195,7 +176,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(id As Integer)
+Public Sub AnimationDone(ID As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

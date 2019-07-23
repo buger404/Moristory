@@ -1,5 +1,5 @@
 #这不是你应该看的文件。
-*title\白狼的日常
+*title\我感受着你的呼吸 但你没有
 *mode\msg
 *bgm\OST 14 - Snowy.mp3
 *bg\Snowfield.png
@@ -18,7 +18,7 @@ say\xl
 say\me
 "有事吗。。。"
 say\xl
-"是的汪。。。好像是第十一只天使诞生了。"
+"是的汪。。。好像是第十七只天使诞生了。"
 say\me
 "你们每只天使都是黑嘴一路带来的吗?"
 say\xl

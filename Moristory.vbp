@@ -36,6 +36,7 @@ Class=BXBattlePage; code\BXBattlePage.cls
 Class=SnowmanPage; code\SnowmanPage.cls
 Class=WeatherLayer; code\WeatherLayer.cls
 Class=TipPage; core\TipPage.cls
+Class=FlyPage; code\FlyPage.cls
 IconForm="GameWindow"
 Startup="GameWindow"
 HelpFile=""

@@ -11,6 +11,7 @@ Public BXBattlePage As BXBattlePage
 Public SnowmanPage As SnowmanPage
 Public WeatherLayer As WeatherLayer
 Public TipPage As TipPage
+Public FlyPage As FlyPage
 
 Public Function GetPartTitle(Part As String) As String
     Dim temp As String

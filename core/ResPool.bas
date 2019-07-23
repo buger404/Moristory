@@ -164,8 +164,8 @@ Public Sub PoolCreateStringFormat(atr As Long, lan As Integer, format As Long)
     gdiplus.GdipCreateStringFormat atr, lan, format
     PoolAddStrF format
 End Sub
-Public Sub PoolCreateFont(fam As Long, ByVal size As Single, style As FontStyle, unit As GpUnit, Font As Long)
-    gdiplus.GdipCreateFont fam, size, style, unit, Font
+Public Sub PoolCreateFont(fam As Long, ByVal Size As Single, style As FontStyle, unit As GpUnit, Font As Long)
+    gdiplus.GdipCreateFont fam, Size, style, unit, Font
     PoolAddFont Font
 End Sub
 Public Sub PoolCreateEffect2(eff As GdipEffectType, Effect As Long)
@@ -196,13 +196,15 @@ Public Sub PoolCreateFromHdc(DC As Long, g As Long)
     gdiplus.GdipCreateFromHDC DC, g
     PoolAddGraphics g
 End Sub
-Public Function CreateCDC(w As Long, h As Long) As Long
+Public Function CreateCDC(W As Long, h As Long) As Long
     Dim bm As BITMAPINFOHEADER, DC As Long, DIB As Long
+
+    Sleep 10: DoEvents
 
     With bm
         .biBitCount = 32
         .biHeight = h
-        .biWidth = w
+        .biWidth = W
         .biPlanes = 1
         .biSizeImage = (.biWidth * .biBitCount + 31) / 32 * 4 * .biHeight
         .biSize = Len(bm)
@@ -213,6 +215,9 @@ Public Function CreateCDC(w As Long, h As Long) As Long
     DeleteObject SelectObject(DC, DIB)
     DeleteObject DIB
     
+    If DC = 0 Then Err.Raise 748748, , "Ë«»º³åDC´´½¨Ê§°Ü"
+    
     CreateCDC = DC
     PoolAddDC DC
+    
 End Function

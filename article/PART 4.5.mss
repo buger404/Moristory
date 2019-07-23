@@ -1,5 +1,5 @@
 #这不是你应该看的文件。
-*title\暴风雪中的它
+*title\孤独的勇者并不畏惧寒冷
 *bgm\OST 14 - Snowy.mp3
 *bgs\Wind_1_3D_loop.mp3
 *mode\scroll
