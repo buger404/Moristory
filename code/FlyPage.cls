@@ -26,6 +26,9 @@ Attribute VB_Exposed = False
 '======================================
 
 Public Sub Update()
+    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    On Error Resume Next
+
     '游戏每一帧的过程（绘制过程请放在此处）
     
     Page.Clear '清空画布
@@ -80,24 +83,24 @@ Public Sub Update()
         Jumptime = GetTickCount
     End If
     
-    Dim pro As Single
+    Dim Pro As Single
     If JumpMode = 0 Then
-        pro = (GetTickCount - Jumptime) / 500
+        Pro = (GetTickCount - Jumptime) / 500
     Else
-        pro = (GetTickCount - Jumptime) / 300
+        Pro = (GetTickCount - Jumptime) / 300
     End If
     
-    If pro > 1 Then pro = 1
+    If Pro > 1 Then Pro = 1
     
     If JumpMode = 0 Then
-        pro = Cubic(pro, 0, 0, 0, 1)
+        Pro = Cubic(Pro, 0, 0, 0, 1)
     Else
-        pro = Cubic(pro, 0, 1, 1, 1)
+        Pro = Cubic(Pro, 0, 1, 1, 1)
     End If
     
-    If pro = 1 And JumpMode = 1 Then JumpMode = 0: Jumptime = GetTickCount: SE.Play "Jump1.mp3"
+    If Pro = 1 And JumpMode = 1 Then JumpMode = 0: Jumptime = GetTickCount: SE.Play "Jump1.mp3"
     
-    PY = PY - IIf(JumpMode = 0, -3 * pro - 1, 4 * pro)
+    PY = PY - IIf(JumpMode = 0, -3 * Pro - 1, 4 * Pro)
     
     If PX > 15000 Then
         SE.Play "Applause1.mp3"

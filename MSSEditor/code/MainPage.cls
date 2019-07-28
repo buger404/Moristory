@@ -132,6 +132,10 @@ Public Sub Update()
                     Case "jy": RoleColor = argb(50, 205, 145, 146)
                     Case "yz": RoleColor = argb(50, 145, 30, 123)
                     Case "bg": RoleColor = argb(50, 198, 198, 129)
+                    
+                    Case "tk": RoleColor = argb(50, 128, 0, 0)
+                    Case "yy": RoleColor = argb(50, 254, 84, 57)
+                    Case "s": RoleColor = argb(50, 65, 165, 238)
                 End Select
                 Page.Paint 0, 0, DY, GW - 60, 31, RoleColor
                 Page.Paint 0, 0, DY, 5, 31, RoleColor
@@ -211,7 +215,7 @@ Public Sub Update()
                 For S = 1 To UBound(Role)
                     IW = Page.Res.ImgSize(Role(S).index, imgGetWidth)
                     DX = DX + IW
-                    Page.DrawImage Role(S).index, GW - 60 - 5 - 35 - DX, DY, ch:=30, alpha:=IIf(NowSpeaker = Role(S).Name, 1, 0.4)
+                    Page.DrawImage Role(S).index, GW - 60 - 5 - 35 - DX, DY, CH:=30, alpha:=IIf(NowSpeaker = Role(S).Name, 1, 0.4)
                     Page.Writes Role(S).Face, GW - 60 - 5 - 35 - DX, DY + 5, 18, argb(255, 255, 255, 255), IW, 30, StringAlignmentCenter, FontStyleBold
                     If CheckMouse(GW - 50 - DX, DY + 40 + 100, IW, 30) = 3 Then
                         Dim FaceN As String
@@ -255,7 +259,7 @@ Public Sub Update()
     If MSSList.ScrollY < 0 Then MSSList.ScrollY = 0
     If MSSList.ScrollY > MaxY Then MSSList.ScrollY = MaxY
     
-    PaintDC MSSList.DC, ODC, 30, 40 + 100, cw:=GW - 60, ch:=GH - 100 - 40 - 50, alpha:=1
+    PaintDC MSSList.DC, ODC, 30, 40 + 100, CW:=GW - 60, CH:=GH - 100 - 40 - 50, alpha:=1
     
     Page.CDC = ODC: Page.GG = OGG
 End Sub
@@ -263,7 +267,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, msg As String)
+Public Sub AnimationMsg(ID As String, Msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()

@@ -19,7 +19,7 @@ Attribute VB_Exposed = False
     Dim LLineTime As Long
     Dim DisplayText As String
     Private Type Role
-        name As String
+        Name As String
         Love As Long
         Face As String
     End Type
@@ -120,8 +120,8 @@ Public Function GetSpeakerName(Speaker As String) As String
         Case "dn": GetSpeakerName = "迪娜"
         Case "yz": GetSpeakerName = "芽子"
         Case "bg": GetSpeakerName = "冰棍"
-        Case "yy1": GetSpeakerName = "雅月"
-        Case "yy2": GetSpeakerName = "雅月"
+        Case "yy": GetSpeakerName = "雅月"
+        Case "qing": GetSpeakerName = "青"
         Case Else
             If InStr(Speaker, "dark") = 1 Then SpeakerName = "？？？"
     End Select
@@ -167,7 +167,7 @@ Exec:
         
         Select Case Params(0)
             Case "demo"
-                MsgBox "DEMO内容到此结束，感谢您的支持！请期待7.25的正式版本~", 64, "Moristory"
+                'MsgBox "DEMO内容到此结束，感谢您的支持！请期待7.25的正式版本~", 64, "Moristory"
                 ECore.NewTransform transFallDark, 2000, "MainPage"
                 Exit Sub
             Case "*save"
@@ -180,7 +180,7 @@ Exec:
             Case "go"
                 CuLine = CuLine + 1
                 TipPage.ShowTip Params(1)
-                ECore.NewTransform transFallDark, 1000, "TipPage"
+                If Params(1) <> "ending" Then ECore.NewTransform transFallDark, 1000, "TipPage"
                 Exit Sub
             Case "***death"
                 SE.Play "Collapse4.mp3"
@@ -206,7 +206,7 @@ Exec:
                 End If
             Case "face"
                 For i = 1 To UBound(N.Roles)
-                    If N.Roles(i).name = Params(1) Then
+                    If N.Roles(i).Name = Params(1) Then
                         N.Roles(i).Face = Params(2): Exit For
                     End If
                 Next
@@ -215,13 +215,13 @@ Exec:
                 If Params(2) = "add" Then
                     ReDim Preserve N.Roles(UBound(N.Roles) + 1)
                     With N.Roles(UBound(N.Roles))
-                        .name = Params(1)
+                        .Name = Params(1)
                         .Face = "normal"
-                        .Love = Val(ESave.GetData(.name & "'s love"))
+                        .Love = Val(ESave.GetData(.Name & "'s love"))
                     End With
                 ElseIf Params(2) = "remove" Then
                     For i = 1 To UBound(N.Roles)
-                        If N.Roles(i).name = Params(1) Then
+                        If N.Roles(i).Name = Params(1) Then
                             N.Roles(i) = N.Roles(UBound(N.Roles)): Exit For
                         End If
                     Next
@@ -249,7 +249,7 @@ Exec:
                 SE.Play Params(1)
             Case "*title"
                 N.Title = Params(1)
-                GameWindow.Caption = "Moristory DEMO - PART " & Part & " , " & N.Title
+                GameWindow.Caption = "Moristory - Chapter " & Part & " , " & N.Title
             Case "*bg"
                 N.BGCOLOR = argb(255, 0, 0, 0)
                 N.BG = Params(1)
@@ -277,7 +277,7 @@ Exec:
                 ECore.NewTransform
             Case "window"
                 If Params(1) = "Moristory" Then
-                    GameWindow.Caption = "Moristory DEMO - PART " & Part & " , " & N.Title
+                    GameWindow.Caption = "Moristory - Chapter " & Part & " , " & N.Title
                 Else
                     GameWindow.Caption = Params(1)
                 End If
@@ -302,7 +302,7 @@ Exec:
             If UBound(N.Roles) = 0 Then
                 N.Speaker = IIf(N.Speaker = "me", "", "me")
             Else
-                N.Speaker = IIf(N.Speaker = "me", N.Roles(1).name, "me")
+                N.Speaker = IIf(N.Speaker = "me", N.Roles(1).Name, "me")
             End If
             N.SpeakerName = GetSpeakerName(N.Speaker)
         Else
@@ -360,28 +360,28 @@ Public Sub ReadNovel(Optional NoRun As Boolean = False)
     End If
 End Sub
 Public Sub DrawQues()
-    Dim pro As Single
-    pro = (GetTickCount - QuesTime) / 1000
-    pro = 1 - pro
-    If pro < 0 Then pro = 0
-    pro = Cubic(pro, 0, 0, 0, 1)
+    Dim Pro As Single
+    Pro = (GetTickCount - QuesTime) / 1000
+    Pro = 1 - Pro
+    If Pro < 0 Then Pro = 0
+    Pro = Cubic(Pro, 0, 0, 0, 1)
 
-    PaintDC ODC, Page.CDC, 0, 0, alpha:=pro * 1
-    PaintDC BlurDC, Page.CDC, 0, 0, alpha:=1 - pro * 1
-    Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(130 - pro * 130, 0, 0, 0)
+    PaintDC ODC, Page.CDC, 0, 0, alpha:=Pro * 1
+    PaintDC BlurDC, Page.CDC, 0, 0, alpha:=1 - Pro * 1
+    Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(130 - Pro * 130, 0, 0, 0)
     
-    Page.DrawImage "questionpad.png", GW / 2, GH / 2 + 200 + pro * 500, alpha:=1, Pos:=posOnCenter
-    Page.Writes N.SpeakerName, GW / 2 - 208, GH / 2 - 59 + pro * 500, 24, argb(255, 255, 255, 255), align:=StringAlignmentCenter
-    Page.Writes Ques.Title, GW / 2 + 15, GH / 2 - 53 + pro * 500, 18, argb(255, 27, 27, 27), align:=StringAlignmentCenter
+    Page.DrawImage "questionpad.png", GW / 2, GH / 2 + 200 + Pro * 500, alpha:=1, Pos:=posOnCenter
+    Page.Writes N.SpeakerName, GW / 2 - 208, GH / 2 - 59 + Pro * 500, 24, argb(255, 255, 255, 255), align:=StringAlignmentCenter
+    Page.Writes Ques.Title, GW / 2 + 15, GH / 2 - 53 + Pro * 500, 18, argb(255, 27, 27, 27), align:=StringAlignmentCenter
     
     Dim m As Long, aw As Long, ah As Long
     aw = Page.Res.ImgSize("answerpad.png", imgGetWidth)
     ah = Page.Res.ImgSize("answerpad.png", imgGetHeight)
     
     For i = 0 To UBound(Ques.Answers) - 1
-        m = CheckMouse(GW / 2 - aw / 2, GH / 2 - 59 + 170 + i * 70 + pro * 500 - ah / 2, aw, ah)
-        Page.DrawImage "answerpad.png", GW / 2, GH / 2 - 59 + 170 + i * 70 + pro * 500, alpha:=IIf(m <> 0, 1, 0.5), Pos:=posOnCenter
-        Page.Writes (i + 1) & ". " & Ques.Answers(i).Caption, GW / 2 - 200, GH / 2 - 59 + 170 + i * 70 - 12 + pro * 500, 16, argb(200, 27, 27, 27)
+        m = CheckMouse(GW / 2 - aw / 2, GH / 2 - 59 + 170 + i * 70 + Pro * 500 - ah / 2, aw, ah)
+        Page.DrawImage "answerpad.png", GW / 2, GH / 2 - 59 + 170 + i * 70 + Pro * 500, alpha:=IIf(m <> 0, 1, 0.5), Pos:=posOnCenter
+        Page.Writes (i + 1) & ". " & Ques.Answers(i).Caption, GW / 2 - 200, GH / 2 - 59 + 170 + i * 70 - 12 + Pro * 500, 16, argb(200, 27, 27, 27)
         If m = 3 Then
             N.mode = "msg"
             ECore.NewTransform
@@ -393,9 +393,9 @@ Public Sub DrawQues()
             End If
             
             For S = 1 To UBound(N.Roles)
-                If N.Roles(S).name = N.Speaker Then
+                If N.Roles(S).Name = N.Speaker Then
                     N.Roles(S).Love = N.Roles(S).Love + Ques.Answers(i).LoveIncrase
-                    ESave.PutData N.Roles(S).name & "'s love", N.Roles(S).Love
+                    ESave.PutData N.Roles(S).Name & "'s love", N.Roles(S).Love
                     If Ques.Answers(i).LoveIncrase > 0 Then
                         N.MsgEvent = "ani+ballon_love"
                     ElseIf Ques.Answers(i).LoveIncrase < 0 Then
@@ -409,19 +409,21 @@ Public Sub DrawQues()
     Next
 End Sub
 Public Sub DrawMsg()
-    Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(130, 0, 0, 0)
+    If Not (Part = 16 And N.BG = "") Then
+        Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(130, 0, 0, 0)
+    End If
     
-    Dim pro As Single
+    Dim Pro As Single
 
-    pro = (GetTickCount - MsgTime2) / 2000
-    If pro > 1 Then
+    Pro = (GetTickCount - MsgTime2) / 2000
+    If Pro > 1 Then
         If N.MsgEvent Like "looptext:*" Then
-            pro = pro - Int(pro)
+            Pro = Pro - Int(Pro)
         Else
-            pro = 1
+            Pro = 1
         End If
     End If
-    pro = Cubic(pro, 0, 1, 1, 1)
+    Pro = Cubic(Pro, 0, 1, 1, 1)
     
     'Debug.Print Now, N.MsgEvent
     If N.MsgEvent Like "pic+*" Then
@@ -435,7 +437,7 @@ Public Sub DrawMsg()
     Dim X As Long
     X = GW / 2
     For i = 1 To UBound(N.Roles)
-        If N.Roles(i).name <> "bg" Then X = X - (Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 50) / 2
+        If N.Roles(i).Name <> "bg" Then X = X - (Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 50 - IIf(UBound(N.Roles) > 3, 100, 0)) / 2
     Next
     
     X = X + 30
@@ -444,23 +446,29 @@ Public Sub DrawMsg()
     Dim DW As Long, DH As Long, TH As Long
     Dim DiaX As Long, DiaY As Long, RoleX As Long
     For i = 1 To UBound(N.Roles)
-        If N.Roles(i).name = "bg" Then
-            DrawX = X - (Page.Res.ImgSize(N.Roles(i - 1).name & "-" & N.Roles(i - 1).Face & ".png", imgGetWidth) + 0) + 210
-            DrawY = GH - 400
+        If N.Roles(i).Name = "bg" Then
+            If N.Roles(i - 1).Name = "xl" Then
+                DrawX = X - (Page.Res.ImgSize(N.Roles(i - 1).Name & "-" & N.Roles(i - 1).Face & ".png", imgGetWidth) + 0) + 210
+                DrawY = GH - 400
+            Else
+                DrawX = X
+                DrawY = GH - 150
+                X = X + (Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetWidth) - IIf(UBound(N.Roles) > 3, 100, 0))
+            End If
         Else
             DrawX = X
-            DrawY = GH + 140 + IIf(N.Roles(i).name = "ssr", -200, 0) + IIf(N.Roles(i).name = "xl", -250, 0) + IIf(Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0)
+            DrawY = GH + 140 + IIf(N.Roles(i).Name = "yy", -200, 0) + IIf(N.Roles(i).Name = "ssr", -200, 0) + IIf(N.Roles(i).Name = "xl", -250, 0) + IIf(Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0)
             
-            X = X + (Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 0)
+            X = X + (Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetWidth) - IIf(UBound(N.Roles) > 3, 100, 0))
         End If
-            Page.DrawImage N.Roles(i).name & "-" & N.Roles(i).Face & ".png", DrawX, DrawY, alpha:=IIf(N.Speaker <> N.Roles(i).name And Speaker <> "aside", 0.7, 1), Pos:=posOnBottom
-        If N.Roles(i).name = N.Speaker Then
+            Page.DrawImage N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", DrawX, DrawY, alpha:=IIf(N.Speaker <> N.Roles(i).Name And Speaker <> "aside", 0.7, 1), Pos:=posOnBottom
+        If N.Roles(i).Name = N.Speaker Then
             RoleX = DrawX
             DW = EF.GetWidth(Page.GG, DisplayText, 17, StringAlignmentNear, FontStyleRegular)
             DH = EF.GetHeight(Page.GG, DisplayText, 17, StringAlignmentNear, FontStyleRegular)
             TH = EF.GetHeight(Page.GG, N.SpeakerName, 18, StringAlignmentNear, FontStyleRegular)
             DiaX = DrawX + (X - DrawX) / 3 * 2
-            DiaY = DrawY - Page.Res.ImgSize(N.Roles(i).name & "-" & N.Roles(i).Face & ".png", imgGetHeight) - DH - TH - 20
+            DiaY = DrawY - Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetHeight) - DH - TH - 20
         End If
     Next
     
@@ -592,13 +600,13 @@ Public Sub DrawMsg()
     
     If DiaX <> 0 Then Page.Paint 0, 0, GH - 200, GW + 1, 201, argb(150, 0, 0, 0)
     
-    Dim Hot As Long, Map() As Single
+    Dim Hot As Long, map() As Single
     If BGM.IsPlaying Then
-        Map = BGM.GetMusicMap
-        For i = 0 To UBound(Map)
+        map = BGM.GetMusicMap
+        For i = 0 To UBound(map)
             If i > 8 Then Exit For
-            Page.PaintLine GW / 2 - i * 20, GH - 100 - Map(i) / 1500 * 80, GW / 2 - i * 20, GH - 100 + Map(i) / 1500 * 80, DiaColor2, 2
-            Page.PaintLine GW / 2 + i * 20, GH - 100 - Map(i) / 1500 * 80, GW / 2 + i * 20, GH - 100 + Map(i) / 1500 * 80, DiaColor2, 2
+            Page.PaintLine GW / 2 - i * 20, GH - 100 - map(i) / 1500 * 80, GW / 2 - i * 20, GH - 100 + map(i) / 1500 * 80, DiaColor2, 2
+            Page.PaintLine GW / 2 + i * 20, GH - 100 - map(i) / 1500 * 80, GW / 2 + i * 20, GH - 100 + map(i) / 1500 * 80, DiaColor2, 2
         Next
     End If
     
@@ -628,7 +636,7 @@ Public Sub DrawMsg()
     End If
     
     If N.MsgEvent Like "*text:*" Then
-        Page.Writes Split(N.MsgEvent, "text:")(1), GW / 2, 100 - 90 * pro, 48, argb(pro * 255, 255, 255, 255), align:=StringAlignmentCenter
+        Page.Writes Split(N.MsgEvent, "text:")(1), GW / 2, 100 - 90 * Pro, 48, argb(Pro * 255, 255, 255, 255), align:=StringAlignmentCenter
     End If
     
     Page.DrawImage "xbtn.png", 20, 20, alpha:=1
@@ -680,21 +688,21 @@ Public Sub ShowHistory()
     BlurTo BlurDC, GDC, GameWindow
 End Sub
 Public Sub DrawHistory()
-    Dim pro As Single, pro2 As Single, pro3 As Single
-    pro = (GetTickCount - QuesTime) / 2000
-    pro = 1 - pro
-    If pro < 0 Then pro = 0
-    pro = Cubic(pro, 0, 0, 0, 1)
+    Dim Pro As Single, pro2 As Single, pro3 As Single
+    Pro = (GetTickCount - QuesTime) / 2000
+    Pro = 1 - Pro
+    If Pro < 0 Then Pro = 0
+    Pro = Cubic(Pro, 0, 0, 0, 1)
 
-    PaintDC ODC, Page.CDC, 0, 0, alpha:=pro * 1
-    PaintDC BlurDC, Page.CDC, 0, 0, alpha:=1 - pro
+    PaintDC ODC, Page.CDC, 0, 0, alpha:=Pro * 1
+    PaintDC BlurDC, Page.CDC, 0, 0, alpha:=1 - Pro
 
-    pro2 = (1 - pro) / 0.5
+    pro2 = (1 - Pro) / 0.5
     If pro2 > 1 Then pro2 = 1
     
     Page.Paint 2, GW / 2, GH - pro2 * GH / 2, pro2 * 600, pro2 * 400, argb(255 - pro2 * 80, 255, 255, 255), Radius:=300 - pro2 * 300, Pos:=posOnCenter
     
-    pro3 = (1 - pro - 0.5) / 0.5
+    pro3 = (1 - Pro - 0.5) / 0.5
     If pro3 < 0 Then pro3 = 0
     
     Dim DH As Long
@@ -739,22 +747,25 @@ Public Sub DrawScroll()
         If Not CursorSndS Then SE.Play "Cursor1.mp3"
     End If
     
-    Dim Lines() As String, pro As Single
+    Dim Lines() As String, Pro As Single
     Lines = Split(DisplayText, vbCrLf)
-    pro = (GetTickCount - LLineTime) / 1500
-    If pro > 1 Then pro = 1
-    pro = Cubic(pro, 0, 1, 1, 1)
+    Pro = (GetTickCount - LLineTime) / 1500
+    If Pro > 1 Then Pro = 1
+    Pro = Cubic(Pro, 0, 1, 1, 1)
     
     Dim y As Long
-    y = GH / 2 - (UBound(Lines) - 2) * 50 - 50 * pro
+    y = GH / 2 - (UBound(Lines) - 2) * 50 - 50 * Pro
     For i = 0 To UBound(Lines) - 1
-        Page.Writes Lines(i), GW / 2, y, 20, argb(IIf(i = UBound(Lines) - 1, pro, 1) * 255, 255, 255, 255), align:=StringAlignmentCenter
+        Page.Writes Lines(i), GW / 2, y, 20, argb(IIf(i = UBound(Lines) - 1, Pro, 1) * 255, 255, 255, 255), align:=StringAlignmentCenter
         y = y + 50
     Next
     
     If GetTickCount - LLineTime >= 3000 Then Call RunNovel
 End Sub
 Public Sub Update()
+    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    On Error Resume Next
+
     '游戏每一帧的过程（绘制过程请放在此处）
     
     Page.Clear N.BGCOLOR  '清空画布
@@ -776,15 +787,15 @@ Public Sub Update()
     
     If SaveTime <> 0 Then
         'Page.Clear argb(255, 27, 27, 27)
-        Dim pro As Single
-        pro = 1
+        Dim Pro As Single
+        Pro = 1
         If GetTickCount - SaveTime <= 1000 Then
-            pro = Cubic((GetTickCount - SaveTime) / 1000, 0, 0, 1, 1)
+            Pro = Cubic((GetTickCount - SaveTime) / 1000, 0, 0, 1, 1)
         ElseIf GetTickCount - SaveTime >= 2000 And GetTickCount - SaveTime <= 2500 Then
-            pro = Cubic(1 - (GetTickCount - SaveTime - 2000) / 500, 0, 1, 1, 1)
+            Pro = Cubic(1 - (GetTickCount - SaveTime - 2000) / 500, 0, 1, 1, 1)
         End If
         
-        Page.Paint 2, GW / 2, pro * 160 - 60, 400, 60, argb(pro * 255, 255, 255, 255), 250, Pos:=posOnCenter
+        Page.Paint 2, GW / 2, Pro * 160 - 60, 400, 60, argb(Pro * 255, 255, 255, 255), 250, Pos:=posOnCenter
         
         If SaveSndMark = False And GetTickCount - SaveTime >= 1500 Then
             SE.Play "SaveDone.wav"
@@ -792,11 +803,11 @@ Public Sub Update()
         End If
         
         If GetTickCount - SaveTime <= 1500 Then
-            Page.ShowLoading GW / 2 - 200 + 20, pro * 160 - 75, 30, 30, 3, argb(pro * 255, 0, 176, 240), argb(pro * 255, 254, 84, 57), argb(pro * 255, 255, 255, 255)
-            Page.Writes "正在保存你的存档...", GW / 2, pro * 160 - 60 - 12, 18, argb(pro * 255, 64, 64, 64), align:=StringAlignmentCenter
+            Page.ShowLoading GW / 2 - 200 + 20, Pro * 160 - 75, 30, 30, 3, argb(Pro * 255, 0, 176, 240), argb(Pro * 255, 254, 84, 57), argb(Pro * 255, 255, 255, 255)
+            Page.Writes "正在保存你的存档...", GW / 2, Pro * 160 - 60 - 12, 18, argb(Pro * 255, 64, 64, 64), align:=StringAlignmentCenter
         Else
-            Page.Paint 1, GW / 2 - 200 + 20, pro * 160 - 75, 30, 30, argb(pro * 255, 9, 241, 117)
-            Page.Writes "你的存档已经保存", GW / 2, pro * 160 - 60 - 12, 18, argb(pro * 255, 64, 64, 64), align:=StringAlignmentCenter
+            Page.Paint 1, GW / 2 - 200 + 20, Pro * 160 - 75, 30, 30, argb(Pro * 255, 9, 241, 117)
+            Page.Writes "你的存档已经保存", GW / 2, Pro * 160 - 60 - 12, 18, argb(Pro * 255, 64, 64, 64), align:=StringAlignmentCenter
         End If
         
         If GetTickCount - SaveTime >= 2500 Then
@@ -810,7 +821,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, msg As String)
+Public Sub AnimationMsg(id As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -825,7 +836,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(ID As Integer)
+Public Sub AnimationDone(id As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

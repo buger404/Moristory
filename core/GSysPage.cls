@@ -47,7 +47,7 @@ Public Sub SaveManDialog()
 
     Dim temp As String, temp2 As String
 
-    If Page.ShowColorButton(1, GW * 0.2 + GW * 0.6 - 24, GH * 0.1 - 24, 48, 48, "+", argb(255, 255, 255, 255), argb(130, 95, 229, 221), argb(255, 95, 229, 221), size:=24, style:=FontStyleBold) = 3 Then
+    If Page.ShowColorButton(1, GW * 0.2 + GW * 0.6 - 24, GH * 0.1 - 24, 48, 48, "+", argb(255, 255, 255, 255), argb(130, 95, 229, 221), argb(255, 95, 229, 221), Size:=24, style:=FontStyleBold) = 3 Then
         temp2 = InputBox("输入新的数据的名称", "新建数据")
         If temp2 = "" Then Exit Sub
         temp = InputBox("输入新的值：" & vbCrLf & temp2, "存档修改")
@@ -55,25 +55,25 @@ Public Sub SaveManDialog()
         ESave.PutData temp2, temp
     End If
 
-    Dim max As Long, I As Integer
+    Dim max As Long, i As Integer
     max = Int(GH * 0.5 / 30)
 
-    For I = DataPage + 1 To DataPage + max
-        If I > ESave.Count Then Exit For
-        Page.Paint 1, GW / 2 - GW * 0.3 + 20, 80 + 30 + (I - DataPage) * 30 + 2, 20, 20, argb(255, 0, 176, 240)
+    For i = DataPage + 1 To DataPage + max
+        If i > ESave.Count Then Exit For
+        Page.Paint 1, GW / 2 - GW * 0.3 + 20, 80 + 30 + (i - DataPage) * 30 + 2, 20, 20, argb(255, 0, 176, 240)
         If CheckMouse2 = mMouseUp Then
-            temp = InputBox("输入新的值：" & vbCrLf & ESave.GetName(I), "存档修改", ESave.GetData(ESave.GetName(I)))
-            ESave.PutData ESave.GetName(I), temp
+            temp = InputBox("输入新的值：" & vbCrLf & ESave.GetName(i), "存档修改", ESave.GetData(ESave.GetName(i)))
+            ESave.PutData ESave.GetName(i), temp
         End If
-        Page.Writes ESave.GetName(I), GW / 2 - GW * 0.3 + 50, 80 + 30 + (I - DataPage) * 30, 18, argb(150, 27, 27, 27), align:=StringAlignmentNear, style:=FontStyleBold
-        Page.Writes ESave.GetData(ESave.GetName(I)), GW / 2 + GW * 0.3 - 30, 80 + 30 + (I - DataPage) * 30, 18, argb(150, 27, 27, 27), align:=StringAlignmentFar
+        Page.Writes ESave.GetName(i), GW / 2 - GW * 0.3 + 50, 80 + 30 + (i - DataPage) * 30, 18, argb(150, 27, 27, 27), align:=StringAlignmentNear, style:=FontStyleBold
+        Page.Writes ESave.GetData(ESave.GetName(i)), GW / 2 + GW * 0.3 - 30, 80 + 30 + (i - DataPage) * 30, 18, argb(150, 27, 27, 27), align:=StringAlignmentFar
     Next
     
     Page.Writes (Int(DataPage / max) + 1) & " / " & (Int(ESave.Count / max) + 1), GW / 2, GH - 120, 16, argb(150, 27, 27, 27), align:=StringAlignmentCenter
-    If Page.ShowColorButton(2, GW / 2 - 80 - 20, GH - 120, 40, 22, "<", argb(150, 27, 27, 27), argb(255, 222, 222, 222), argb(130, 95, 229, 221), size:=16, Radius:=60) = 3 Then
+    If Page.ShowColorButton(2, GW / 2 - 80 - 20, GH - 120, 40, 22, "<", argb(150, 27, 27, 27), argb(255, 222, 222, 222), argb(130, 95, 229, 221), Size:=16, Radius:=60) = 3 Then
         If DataPage > 0 Then DataPage = DataPage - max: ECore.NewTransform
     End If
-    If Page.ShowColorButton(2, GW / 2 + 80 - 20, GH - 120, 40, 22, ">", argb(150, 27, 27, 27), argb(255, 222, 222, 222), argb(130, 95, 229, 221), size:=16, Radius:=60) = 3 Then
+    If Page.ShowColorButton(2, GW / 2 + 80 - 20, GH - 120, 40, 22, ">", argb(150, 27, 27, 27), argb(255, 222, 222, 222), argb(130, 95, 229, 221), Size:=16, Radius:=60) = 3 Then
         If (Int(DataPage / max) + 1) < (Int(ESave.Count / max) + 1) Then DataPage = DataPage + max: ECore.NewTransform
     End If
 End Sub
@@ -103,10 +103,10 @@ Public Sub LOGODialog()
     End If
     
     Dim Points() As POINTF, Path As Long, brush As Long, y As Long
-    Dim pro As Single
+    Dim Pro As Single
     ReDim Points(1)
     
-    pro = (LoadedCount / PreLoadCount)
+    If PreLoadCount <> 0 Then Pro = (LoadedCount / PreLoadCount)
     
     GdipCreatePath FillModeWinding, Path
     GdipCreateSolidFill argb(255, 27, 27, 27), brush
@@ -134,7 +134,7 @@ Public Sub LOGODialog()
     GdipAddPathCurve Path, Points(0), UBound(Points) + 1
     GdipFillPath Page.GG, brush, Path
     GdipFillRectangle Page.GG, LOGO, GW / 2 - GH * 0.2 / 2, GH * 0.4, GH * 0.2, GH * 0.2
-    Page.Writes Int(pro * 100) & "%", GW / 2, GH / 2 + GH * 0.2 / 2 + 20, 20, argb(255, 27, 27, 27), align:=StringAlignmentCenter
+    Page.Writes Int(Pro * 100) & "%", GW / 2, GH / 2 + GH * 0.2 / 2 + 20, 20, argb(255, 27, 27, 27), align:=StringAlignmentCenter
     
     GdipDeleteBrush brush
     GdipDeletePath Path

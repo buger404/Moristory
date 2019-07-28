@@ -2,6 +2,7 @@ Attribute VB_Name = "ResPool"
 Dim DC() As Long, brush() As Long, Font() As Long, StrF() As Long, Pen() As Long
 Dim Graphics() As Long, Image() As Long, Effect() As Long, Path() As Long
 Dim Obj() As Object
+Dim DIB() As Long
 Public Function GetCountStr() As String
     GetCountStr = "DC " & UBound(DC) & " , Brush " & UBound(brush) & " , Pen " & UBound(Pen) & vbCrLf & _
                   "Font " & UBound(Font) & " , StringFormat " & UBound(StrF) & vbCrLf & _
@@ -19,6 +20,7 @@ Public Sub InitPool()
     ReDim Obj(0)
     ReDim Effect(0)
     ReDim Path(0)
+    ReDim DIB(0)
     If App.LogMode = 0 Then Open VBA.Environ("temp") & "\Emerald " & year(Now) & "_" & Month(Now) & "_" & Day(Now) & "_" & Hour(Now) & "_" & Minute(Now) & "_" & Second(Now) & "_" & App.ThreadID & ".txt" For Output As #446
 End Sub
 Public Sub EmrLog(Str As String)
@@ -28,6 +30,9 @@ Public Sub DestroyPool()
     On Error Resume Next
     EmrLog "Emerald ResPool Version " & Version
     EmrLog "Work starting ..."
+    For i = 1 To UBound(DIB)
+        If DIB(i) <> 0 Then DeleteObject DIB(i): EmrLog "Delete DIB " & DIB(i)
+    Next
     For i = 1 To UBound(DC)
         If DC(i) <> 0 Then DeleteObject DC(i): EmrLog "Delete DC " & DC(i)
     Next
@@ -132,6 +137,10 @@ Public Sub PoolAddEffect(Hwnd As Long)
     ReDim Preserve Effect(UBound(Effect) + 1)
     Effect(UBound(Effect)) = Hwnd
 End Sub
+Public Sub PoolAddDIB(Hwnd As Long)
+    ReDim Preserve DIB(UBound(DIB) + 1)
+    DIB(UBound(DIB)) = Hwnd
+End Sub
 Public Sub PoolAddDC(Hwnd As Long)
     ReDim Preserve DC(UBound(DC) + 1)
     DC(UBound(DC)) = Hwnd
@@ -199,7 +208,9 @@ End Sub
 Public Function CreateCDC(W As Long, h As Long) As Long
     Dim bm As BITMAPINFOHEADER, DC As Long, DIB As Long
 
-    Sleep 10: DoEvents
+    'Sleep 10: DoEvents
+
+    DC = CreateCompatibleDC(GDC)
 
     With bm
         .biBitCount = 32
@@ -207,17 +218,18 @@ Public Function CreateCDC(W As Long, h As Long) As Long
         .biWidth = W
         .biPlanes = 1
         .biSizeImage = (.biWidth * .biBitCount + 31) / 32 * 4 * .biHeight
-        .biSize = Len(bm)
+        .biSize = 40
     End With
     
-    DC = CreateCompatibleDC(GDC)
     DIB = CreateDIBSection(DC, bm, DIB_RGB_COLORS, ByVal 0, 0, 0)
+    
+    If DC = 0 Then Debug.Print Now, "Ë«»º³åDC´´½¨Ê§°Ü£ºDC"
+    If DIB = 0 Then Debug.Print Now, "Ë«»º³åDC´´½¨Ê§°Ü£ºDIB", bm.biWidth, bm.biHeight, bm.biSizeImage
+    
     DeleteObject SelectObject(DC, DIB)
     DeleteObject DIB
     
-    If DC = 0 Then Err.Raise 748748, , "Ë«»º³åDC´´½¨Ê§°Ü"
-    
     CreateCDC = DC
     PoolAddDC DC
-    
+    'PoolAddDIB DIB
 End Function

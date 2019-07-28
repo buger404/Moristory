@@ -445,6 +445,22 @@ Begin VB.Form MainWindow
             Caption         =   "ssr - É¯ÉªÈð"
             Index           =   10
          End
+         Begin VB.Menu roleaddBtn 
+            Caption         =   "tk - Ëþ¿Ë"
+            Index           =   11
+         End
+         Begin VB.Menu roleaddBtn 
+            Caption         =   "yy -ÑÅÔÂ"
+            Index           =   12
+         End
+         Begin VB.Menu roleaddBtn 
+            Caption         =   "s - ÊÀ"
+            Index           =   13
+         End
+         Begin VB.Menu roleaddBtn 
+            Caption         =   "dn -µÏÄÈ"
+            Index           =   14
+         End
       End
       Begin VB.Menu roleremoveBtn 
          Caption         =   "Remove"

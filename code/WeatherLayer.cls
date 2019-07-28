@@ -13,7 +13,7 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '======================================
 '   页面绘制器
-    Dim Page As GPage
+    Public Page As GPage
     Public Weather As String
     Private Type Pos
         X As Long
@@ -61,9 +61,9 @@ End Sub
 Public Sub DrawDebug()
     Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(100, 0, 0, 0)
     
-    Page.Paint 2, GW / 2, GH / 2, 600, 500, argb(255, 255, 255, 255), 32, Pos:=posOnCenter
+    Page.Paint 2, GW / 2, GH / 2, 600, 600, argb(255, 255, 255, 255), 32, Pos:=posOnCenter
     
-    Dim Games(10) As String
+    Dim Games(14) As String
     Games(0) = "maze"
     Games(1) = "battle"
     Games(2) = "chess"
@@ -75,22 +75,29 @@ Public Sub DrawDebug()
     Games(8) = "fly"
     Games(9) = "mazecore"
     Games(10) = "mazelake"
+    Games(11) = "tlp"
+    Games(12) = "dance"
+    Games(13) = "final"
+    Games(14) = "ending"
     
     Dim m As Long
     
     For i = 0 To UBound(Games)
-        Page.Paint 0, GW / 2 - 250, GH / 2 - 250 + 32 + i * 34, 500, 35, IIf(i Mod 2 = 0, argb(255, 240, 240, 240), argb(255, 255, 255, 255))
+        Page.Paint 0, GW / 2 - 250, GH / 2 - 300 + 32 + i * 34, 500, 35, IIf(i Mod 2 = 0, argb(255, 240, 240, 240), argb(255, 255, 255, 255))
         m = CheckMouse2
         If m = mMouseUp Then
-            TipPage.ShowTip Games(i)
             ECore.NewTransform transDarkTo, , "TipPage"
+            TipPage.ShowTip Games(i)
             Call SwitchDebug
         End If
-        Page.Writes Games(i), GW / 2 - 250 + 10, GH / 2 - 250 + 32 + 4 + i * 34, 18, argb(255, 27, 27, 27)
-        If m > 0 Then Page.Paint 0, GW / 2 - 250, GH / 2 - 250 + 32 + i * 34, 500, 35, argb(30, 0, 176, 240)
+        Page.Writes Games(i), GW / 2 - 250 + 10, GH / 2 - 300 + 32 + 4 + i * 34, 18, argb(255, 27, 27, 27)
+        If m > 0 Then Page.Paint 0, GW / 2 - 250, GH / 2 - 300 + 32 + i * 34, 500, 35, argb(30, 0, 176, 240)
     Next
 End Sub
 Public Sub Update()
+    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    On Error Resume Next
+
     '游戏每一帧的过程（绘制过程请放在此处）
     
     Page.Clear 0 '清空画布
@@ -102,7 +109,7 @@ Public Sub Update()
         Case ""
         Case "snow": Call DrawSnow
         Case "snowstorm": Call DrawSnowStorm
-        Case "dark": Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(70, 10, 0, 0)
+        'Case "dark": Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(70, 10, 0, 0)
     End Select
     
 End Sub
@@ -151,7 +158,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, msg As String)
+Public Sub AnimationMsg(id As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -166,7 +173,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(ID As Integer)
+Public Sub AnimationDone(id As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

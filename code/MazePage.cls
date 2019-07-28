@@ -14,7 +14,7 @@ Attribute VB_Exposed = False
 '======================================
 '   页面绘制器
     Dim Page As GPage
-    Dim Map() As Integer
+    Dim map() As Integer, MapCover() As Boolean
     Dim PX As Single, PY As Single
     Dim DarkX As Single, DarkY As Single, FollowStep As Long
     Dim FX(5) As Single, FY(5) As Single
@@ -29,9 +29,9 @@ Attribute VB_Exposed = False
     Dim BoardText() As String
 '=====================================
     'Snowstorm
-    Dim Hp As Long, MaxHp As Long, LastHp As Long
+    Dim HP As Long, MaxHP As Long, LastHP As Long
     Dim MP As Long, MaxMP As Long
-    Dim UHP As Long, UMaxHp As Long
+    Dim UHP As Long, UMaxHP As Long
     Dim ATKS() As Single, ATKIndex As Long
     Dim UGun() As Fires
     Private Type Fires
@@ -61,9 +61,10 @@ Public Sub LoadMap(Optional MapName As String = "")
     Image = Page.Res.ResourceImageHandle(Page.Res.GetImage("maze" & MapName & ".png"))
     GdipGetImageWidth Image, W: GdipGetImageHeight Image, h
     
-    If MapDC <> 0 Then DeleteObject MapDC
-    If CoverDC <> 0 Then DeleteObject CoverDC
-    If MapViewDC <> 0 Then DeleteObject MapViewDC
+    If MapDC <> 0 Then DeleteObject MapDC: MapDC = 0
+    If CoverDC <> 0 Then DeleteObject CoverDC: CoverDC = 0
+    If MapViewDC <> 0 Then DeleteObject MapViewDC: MapViewDC = 0
+    If TelViewDC <> 0 Then DeleteObject TelViewDC: TelViewDC = 0
     
     MapViewDC = CreateCDC(W * 3 + 3, h * 3)
     TelViewDC = CreateCDC(W * 90, h * 90 + 90)
@@ -71,31 +72,35 @@ Public Sub LoadMap(Optional MapName As String = "")
 
     GdipSetSmoothingMode TelViewGG, SmoothingModeAntiAlias
     
-    MapDC = CreateCDC(W * 90, h * 90 + 90)
-    CoverDC = CreateCDC(W * 90, h * 90 + 90)
+    If MapName = "snowstorm" Then
+        MapDC = CreateCDC(W * 90, h * 90 + 90)
+        CoverDC = CreateCDC(W * 90, h * 90 + 90)
+    End If
     
     Sleep 100: DoEvents
     
     Dim ColorCheck(3) As Byte
     
-    ReDim Map(W + 1, h + 2)
+    ReDim map(W + 1, h + 2)
+    ReDim MapCover(W + 1, h + 2)
+    
     For y = 0 To h
         For X = 0 To W
             GdipBitmapGetPixel Image, X, y, Color
             CopyMemory ColorCheck(0), Color, 4
-            If ColorCheck(3) = 0 Then Map(X, y + 1) = Page.Res.GetImage("alpha" & MapName & ".png")
-            If ColorCheck(0) = 66 And ColorCheck(2) = 66 Then Map(X, y + 1) = 404 + ColorCheck(1)
-            If Color = argb(255, 128, 0, 0) Then Map(X, y + 1) = Page.Res.GetImage("tel" & MapName & "1.png")
-            If Color = argb(255, 128, 0, 128) Then Map(X, y + 1) = Page.Res.GetImage("tel" & MapName & "2.png")
-            If Color = argb(255, 255, 204, 255) Then Map(X, y + 1) = Page.Res.GetImage("tel" & MapName & "3.png")
+            If ColorCheck(3) = 0 Then map(X, y + 1) = Page.Res.GetImage("alpha" & MapName & ".png")
+            If ColorCheck(0) = 66 And ColorCheck(2) = 66 Then map(X, y + 1) = 404 + ColorCheck(1)
+            If Color = argb(255, 128, 0, 0) Then map(X, y + 1) = Page.Res.GetImage("tel" & MapName & "1.png")
+            If Color = argb(255, 128, 0, 128) Then map(X, y + 1) = Page.Res.GetImage("tel" & MapName & "2.png")
+            If Color = argb(255, 255, 204, 255) Then map(X, y + 1) = Page.Res.GetImage("tel" & MapName & "3.png")
             
-            If Color = argb(255, 255, 255, 255) Then Map(X, y + 1) = Page.Res.GetImage("white" & MapName & ".png")
-            If Color = argb(255, 153, 204, 255) Then Map(X, y + 1) = Page.Res.GetImage("blue" & MapName & ".png")
-            If Color = argb(255, 255, 153, 51) Then Map(X, y + 1) = Page.Res.GetImage("orange" & MapName & ".png")
-            If Color = argb(255, 0, 255, 0) Then Map(X, y + 1) = Page.Res.GetImage("green" & MapName & ".png")
-            If Color = argb(255, 0, 0, 0) Then Map(X, y + 1) = Page.Res.GetImage("black" & MapName & ".png")
-            If Color = argb(255, 0, 255, 255) Then Map(X, y + 1) = Page.Res.GetImage("alpha" & MapName & ".png"): StartX = X: StartY = y + 1
-            If Color = argb(255, 255, 0, 0) Then Map(X, y + 1) = Page.Res.GetImage("alpha" & MapName & ".png"): EndX = X: EndY = y + 1
+            If Color = argb(255, 255, 255, 255) Then map(X, y + 1) = Page.Res.GetImage("white" & MapName & ".png")
+            If Color = argb(255, 153, 204, 255) Then map(X, y + 1) = Page.Res.GetImage("blue" & MapName & ".png")
+            If Color = argb(255, 255, 153, 51) Then map(X, y + 1) = Page.Res.GetImage("orange" & MapName & ".png")
+            If Color = argb(255, 0, 255, 0) Then map(X, y + 1) = Page.Res.GetImage("green" & MapName & ".png")
+            If Color = argb(255, 0, 0, 0) Then map(X, y + 1) = Page.Res.GetImage("black" & MapName & ".png")
+            If Color = argb(255, 0, 255, 255) Then map(X, y + 1) = Page.Res.GetImage("alpha" & MapName & ".png"): StartX = X: StartY = y + 1
+            If Color = argb(255, 255, 0, 0) Then map(X, y + 1) = Page.Res.GetImage("alpha" & MapName & ".png"): EndX = X: EndY = y + 1
             'Debug.Assert (Map(X, y + 1) <> 0 Or X < 64)
         Next
     Next
@@ -111,28 +116,33 @@ Public Sub LoadMap(Optional MapName As String = "")
     Dim ODC As Long, Alphas As Single
     Alphas = 1
     
-    ODC = Page.CDC
-    Page.CDC = MapDC
+    If MapName = "snowstorm" Then
+        ODC = Page.CDC
+        Page.CDC = MapDC
+    End If
+    
     For X = 0 To W
         For y = 1 To h + 1
-            'If MapName = "lake" And (Map(X, y) = TelIndex1 Or Map(X, y) = TelIndex2 Or Map(X, y) = TelIndex3) Then
-                'Page.DrawImage WhiteIndex, (X - 0) * 90, (y - 0) * 90, alpha:=1
-            'Else
-                Page.DrawImage AlphaIndex, (X - 0) * 90, (y - 0) * 90, alpha:=1
-            'End If
-            If Map(X, y) >= 404 Then
-                Page.DrawImage "board.png", (X - 0) * 90, (y - 0) * 90, alpha:=1
-            ElseIf Page.Res.ImgSize(Map(X, y), imgGetHeight) = 180 Then
-                Page.DrawImage Map(X, y), (X - 0) * 90, (y - 0) * 90, CY:=90, ch:=90, alpha:=1
-                Page.CDC = CoverDC
-                Page.DrawImage Map(X, y), (X - 0) * 90, (y - 0) * 90 - 90, CY:=0, ch:=90, alpha:=1
-                Page.CDC = MapDC
+
+            If MapName = "snowstorm" Then Page.DrawImage AlphaIndex, (X - 0) * 90, (y - 0) * 90, alpha:=1
+
+            If map(X, y) >= 404 Then
+                If MapName = "snowstorm" Then Page.DrawImage "board.png", (X - 0) * 90, (y - 0) * 90, alpha:=1
+            ElseIf Page.Res.ImgSize(map(X, y), imgGetHeight) = 180 Then
+                MapCover(X, y) = True
+                If MapName = "snowstorm" Then
+                    Page.DrawImage map(X, y), (X - 0) * 90, (y - 0) * 90, CY:=90, CH:=90, alpha:=1
+                    Page.CDC = CoverDC
+                    Page.DrawImage map(X, y), (X - 0) * 90, (y - 0) * 90 - 90, CY:=0, CH:=90, alpha:=1
+                    Page.CDC = MapDC
+                End If
             Else
-                Page.DrawImage Map(X, y), (X - 0) * 90, (y - 0) * 90, alpha:=1
+                If MapName = "snowstorm" Then Page.DrawImage map(X, y), (X - 0) * 90, (y - 0) * 90, alpha:=1
             End If
         Next
     Next
-    Page.CDC = ODC
+    
+    If MapName = "snowstorm" Then Page.CDC = ODC
     
     Select Case MapName
         Case ""
@@ -169,8 +179,8 @@ Public Sub LoadMap(Optional MapName As String = "")
             BGS.Create App.Path & "\music\bgs\Wind_1_3D_loop.mp3"
             BGS.Play
             WeatherLayer.ChangeWeather "snowstorm"
-            UMaxHp = 2000: UHP = UMaxHp
-            MaxHp = 4000: Hp = MaxHp: LastHp = MaxHp
+            UMaxHP = 2000: UHP = UMaxHP
+            MaxHP = 4000: HP = MaxHP: LastHP = MaxHP
             MaxMP = 2000: MP = MaxMP
         Case "darkforest"
     End Select
@@ -180,29 +190,29 @@ Public Function IsBlock(X As Long, y As Long) As Boolean
     If X < 0 Then X = 0
     'If App.LogMode = 0 Then Exit Function
     If MapNames = "core" Then
-        IsBlock = (Map(X, y) <> AlphaIndex)
-        If Map(X, y) = TelIndex1 Or Map(X, y) = TelIndex2 Or Map(X, y) = TelIndex3 Then IsBlock = False
+        IsBlock = (map(X, y) <> AlphaIndex)
+        If map(X, y) = TelIndex1 Or map(X, y) = TelIndex2 Or map(X, y) = TelIndex3 Then IsBlock = False
     ElseIf MapNames = "lake" Then
-        IsBlock = (Map(X, y) <> AlphaIndex)
-        If Map(X, y) = TelIndex1 Or Map(X, y) = TelIndex2 Or Map(X, y) = TelIndex3 Or Map(X, y) = WhiteIndex Then IsBlock = False
+        IsBlock = (map(X, y) <> AlphaIndex)
+        If map(X, y) = TelIndex1 Or map(X, y) = TelIndex2 Or map(X, y) = TelIndex3 Or map(X, y) = WhiteIndex Then IsBlock = False
     Else
-        IsBlock = (Map(X, y) = HuaIndex)
+        IsBlock = (map(X, y) = HuaIndex)
     End If
 End Function
 Public Sub CheckTel()
-    If Not (Map(PX, PY) = TelIndex1 Or Map(PX, PY) = TelIndex2 Or Map(PX, PY) = TelIndex3) Then Exit Sub
+    If Not (map(PX, PY) = TelIndex1 Or map(PX, PY) = TelIndex2 Or map(PX, PY) = TelIndex3) Then Exit Sub
     
     Dim Tel As Integer, X As Long, y As Long, Distance As Long
     Dim TargetX As Long, TargetY As Long, LDistance As Long
     
-    If Map(PX, PY) = TelIndex3 Then TargetX = StartX: TargetY = StartY: GoTo last
+    If map(PX, PY) = TelIndex3 Then TargetX = StartX: TargetY = StartY: GoTo last
     
-    Tel = Map(PX, PY)
+    Tel = map(PX, PY)
     
     LDistance = 999999999
-    For X = 0 To UBound(Map, 1)
-        For y = 0 To UBound(Map, 2)
-            If Map(X, y) = Tel And (Not (X = Round(PX) And y = Round(PY))) Then
+    For X = 0 To UBound(map, 1)
+        For y = 0 To UBound(map, 2)
+            If map(X, y) = Tel And (Not (X = Round(PX) And y = Round(PY))) Then
                 Distance = (X - PX) ^ 2 + (y - PY) ^ 2
                 'Debug.Print Now, X, y, Distance
                 If Distance < LDistance Then
@@ -231,7 +241,7 @@ last:
     TelStep = 30
 End Sub
 Public Sub CheckLake()
-    If Not (Map(PX, PY) = WhiteIndex) Then WalkLock = False: Exit Sub
+    If Not (map(PX, PY) = WhiteIndex) Then WalkLock = False: Exit Sub
     
     '↑↓←→ 0 3 6 9
     '-1 1 -1 1
@@ -249,6 +259,9 @@ Public Sub CheckLake()
     If OldLock <> WalkLock And WalkLock Then SE.Play "Jump1.mp3"
 End Sub
 Public Sub Update()
+    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    On Error Resume Next
+    
     '游戏每一帧的过程（绘制过程请放在此处）
     
     If MapNames = "snowstorm" Then Call UpdateSnowStorm: Exit Sub
@@ -270,21 +283,21 @@ Public Sub Update()
         If CY < 90 Then CY = 90
     End If
     
-    W = 90 * (UBound(Map, 1) - 1) - IIf(CX >= 0, CX, 0)
-    h = 90 * (UBound(Map, 2) - 1) - IIf(CY >= 0, CY, 0)
+    W = 90 * (UBound(map, 1) - 1) - IIf(CX >= 0, CX, 0)
+    h = 90 * (UBound(map, 2) - 1) - IIf(CY >= 0, CY, 0)
     
     If MapNames = "core" Or MapNames = "lake" Then
-        If W < GW Then W = GW: CX = 90 * (UBound(Map, 1) - 1) - GW
-        If h < GH Then h = GH: CY = 90 * (UBound(Map, 2) - 1) - GH
+        If W < GW Then W = GW: CX = 90 * (UBound(map, 1) - 1) - GW
+        If h < GH Then h = GH: CY = 90 * (UBound(map, 2) - 1) - GH
     End If
     
     If W > GW Then W = GW
     If h > GH Then h = GH
     
-    Dim pro As Single
-    pro = 1 - (Abs(EndX - PX) + Abs(EndY - PY)) / 5
-    If pro < 0 Then pro = 0
-    If pro > 1 Then pro = 1
+    Dim Pro As Single
+    Pro = 1 - (Abs(EndX - PX) + Abs(EndY - PY)) / 5
+    If Pro < 0 Then Pro = 0
+    If Pro > 1 Then Pro = 1
     
     Dim Walking As Boolean, DrawMap As Boolean
     Dim MapW As Long, MapH As Long, X As Long, y As Long
@@ -324,20 +337,46 @@ Public Sub Update()
         End If
     End If
     
-    PaintDC MapDC, Page.CDC, IIf(CX < 0, -CX, 0), IIf(CY < 0, -CY, 0), IIf(CX >= 0, CX, 0), IIf(CY >= 0, CY, 0), W, h, 1
+    'PaintDC MapDC, Page.CDC, IIf(CX < 0, -CX, 0), IIf(CY < 0, -CY, 0), IIf(CX >= 0, CX, 0), IIf(CY >= 0, CY, 0), W, h, 1
+    
+    Dim telPro As Single, DrawX As Long, DrawY As Long
+    Dim StX As Long, StY As Long, EnX As Long, EnY As Long
+    Dim DrawedY As Boolean
+    
+    For X = 0 To UBound(map, 1)
+        DrawedY = False
+        For y = 0 To UBound(map, 2)
+            DrawX = X * 90 - CX: DrawY = y * 90 - CY
+            If DrawX > -90 And DrawY > -90 And DrawX < GW And DrawY < GH Then
+                DrawedY = True
+                If StX = 0 Then StX = X
+                If StY = 0 Then StY = y
+                Page.DrawImage AlphaIndex, DrawX, DrawY, alpha:=1
+                If map(X, y) <> AlphaIndex Then
+                    If map(X, y) >= 404 Then
+                        Page.DrawImage "board.png", DrawX, DrawY, alpha:=1
+                    ElseIf Not MapCover(X, y) Then
+                        Page.DrawImage map(X, y), DrawX, DrawY, alpha:=1
+                    End If
+                End If
+            Else
+                If DrawedY Then EnX = X: Exit For
+            End If
+        Next
+        If (Not DrawedY) And StX <> 0 Then EnY = y: Exit For
+    Next
     
     Dim darkpro As Single
-    darkpro = pro
+    darkpro = Pro
     If DarkX = 0 And DarkY = 0 Then darkpro = 0.2
     If MapNames = "" Then Page.DrawImage "darkssr.png", (DarkX - 0) * 90 - CX, (DarkY - 0) * 90 - CY, alpha:=1 - darkpro * 4.6
     
-    If MapNames = "lake" And Map(PX, PY) = WhiteIndex Then
+    If MapNames = "lake" And map(PX, PY) = WhiteIndex Then
         Page.DrawImage "qingwater" & Direction & ".png", PX * 90 - CX, PY * 90 - CY + Sin((GetTickCount Mod 800) / 100) * 5, alpha:=IIf(TelStep > 0, 0.4, 1)
     Else
-        Page.DrawImage "qing" & IIf(Walking, IIf(GetTickCount Mod 300 < 150, Direction, Direction + 2), Direction + 1) & ".png", PX * 90 - CX, PY * 90 - CY, alpha:=IIf(TelStep > 0, 0.4, 1)
+        Page.DrawImage "qing" & IIf(Walking, IIf(GetTickCount Mod 150 < 70, Direction, Direction + 2), Direction + 1) & ".png", PX * 90 - CX, PY * 90 - CY, alpha:=IIf(TelStep > 0, 0.4, 1)
     End If
     
-    Dim telPro As Single, DrawX As Long, DrawY As Long
     telPro = (GetTickCount Mod 2000) / 1000
     If telPro > 1 Then telPro = 1
     telPro = Cubic(1 - telPro, 0, 0, 0, 1)
@@ -348,26 +387,29 @@ Public Sub Update()
     
     Dim DW As Long
     
-    For X = 0 To UBound(Map, 1)
-        For y = 0 To UBound(Map, 2)
+    For X = StX - 1 To EnX
+        For y = StY To EnY
             DrawX = X * 90 - CX: DrawY = y * 90 - CY
-            If DrawX > -90 And DrawY > -90 And DrawX < GW And DrawY < GH Then
+            If DrawX > -90 And DrawY > -90 And DrawX < GW And DrawY < GH + 90 Then
+                If MapCover(X, y) Then Page.DrawImage map(X, y), DrawX, DrawY + 90, alpha:=1, Pos:=posOnBottom
                 If TelIndex1 <> 0 Then
-                    If Map(X, y) = TelIndex1 Or Map(X, y) = TelIndex2 Or Map(X, y) = TelIndex3 Then
+                    If map(X, y) = TelIndex1 Or map(X, y) = TelIndex2 Or map(X, y) = TelIndex3 Then
                         Page.Paint 1, DrawX + 45, DrawY + 45, 180 - 180 * telPro, 180 - 180 * telPro, argb(128 * telPro, 255, 255, 255), Pos:=posOnCenter
                     End If
                 End If
-                If Abs(X - PX) <= 1 And Abs(y - PY) <= 1 And Map(X, y) >= 404 Then
-                    DW = EF.GetWidth(Page.GG, BoardText(Map(X, y) - 404), 18, StringAlignmentCenter, FontStyleRegular)
-                    Page.Paint 2, DrawX + 45, DrawY - 45, DW + 30, 30, argb(255, 255, 255, 255), 99, Pos:=posOnCenter
-                    Page.Writes BoardText(Map(X, y) - 404), DrawX + 45, DrawY - 45 - 12, 18, argb(255, 27, 27, 27), align:=StringAlignmentCenter
+                If Abs(X - PX) <= 1 And Abs(y - PY) <= 1 And map(X, y) >= 404 Then
+                    If map(X, y) - 404 <= UBound(BoardText) Then
+                        DW = EF.GetWidth(Page.GG, BoardText(map(X, y) - 404), 18, StringAlignmentCenter, FontStyleRegular)
+                        Page.Paint 2, DrawX + 45, DrawY - 45, DW + 30, 30, argb(255, 255, 255, 255), 99, Pos:=posOnCenter
+                        Page.Writes BoardText(map(X, y) - 404), DrawX + 45, DrawY - 45 - 12, 18, argb(255, 27, 27, 27), align:=StringAlignmentCenter
+                    End If
                 End If
             End If
         Next
     Next
 
     'Page.Paint 1, GW / 2 - 45, GH / 2 - 45, 90, 90, argb(255, 255, 255, 255)
-    PaintDC CoverDC, Page.CDC, IIf(CX < 0, -CX, 0), IIf(CY < 0, -CY, 0), IIf(CX >= 0, CX, 0), IIf(CY >= 0, CY, 0), W, h, 1
+    'PaintDC CoverDC, Page.CDC, IIf(CX < 0, -CX, 0), IIf(CY < 0, -CY, 0), IIf(CX >= 0, CX, 0), IIf(CY >= 0, CY, 0), W, h, 1
     
     If MapNames = "core" Or MapNames = "lake" Then
         PaintDC TelViewDC, Page.CDC, IIf(CX < 0, -CX, 0), IIf(CY < 0, -CY, 0), IIf(CX >= 0, CX, 0), IIf(CY >= 0, CY, 0), W, h, 1
@@ -375,14 +417,14 @@ Public Sub Update()
     
     If MapNames = "core" Then
     ElseIf MapNames = "lake" Then
-        Page.DrawImage "shadow2.png", 0, 0, alpha:=(1 - pro * 1) * IIf(MapNames = "", 1, 0.9)
+        Page.DrawImage "shadow2.png", 0, 0, alpha:=(1 - Pro * 1) * IIf(MapNames = "", 1, 0.9)
     Else
-        Page.DrawImage "shadow.png", 0, 0, alpha:=(1 - pro * 1) * IIf(MapNames = "", 1, 0.9)
+        Page.DrawImage "shadow.png", 0, 0, alpha:=(1 - Pro * 1) * IIf(MapNames = "", 1, 0.9)
     End If
     
-    Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(pro * 255, 255, 255, 255)
+    Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(Pro * 255, 255, 255, 255)
     
-    If pro = 1 Then
+    If Pro = 1 Then
         BGM.rate = 1
         BGS.Dispose
         NovelPage.RunNovel
@@ -390,8 +432,8 @@ Public Sub Update()
         ECore.NewTransform transHighLight, 3000, "NovelPage"
     End If
     
-    MapW = UBound(Map, 1) + 1
-    MapH = UBound(Map, 2) + 1
+    MapW = UBound(map, 1) + 1
+    MapH = UBound(map, 2) + 1
     
     If DrawMap Then
         For X = PX - 2 To PX + 2
@@ -399,9 +441,9 @@ Public Sub Update()
                 If X >= 0 And X <= MapW - 1 And y >= 0 And y <= MapH - 1 Then
                     If IsBlock(X, y) Then
                         SetPixel MapViewDC, X, y, RGB(120, 120, 120)
-                    ElseIf Map(X, y) = TelIndex1 Or Map(X, y) = TelIndex2 Or Map(X, y) = TelIndex3 Then
+                    ElseIf map(X, y) = TelIndex1 Or map(X, y) = TelIndex2 Or map(X, y) = TelIndex3 Then
                         SetPixel MapViewDC, X, y, RGB(227, 88, 80)
-                    ElseIf Map(X, y) = WhiteIndex And MapNames = "lake" Then
+                    ElseIf map(X, y) = WhiteIndex And MapNames = "lake" Then
                         SetPixel MapViewDC, X, y, RGB(180, 180, 255)
                     Else
                         SetPixel MapViewDC, X, y, RGB(255, 255, 255)
@@ -421,8 +463,8 @@ Public Sub Update()
     Page.Writes "终点", 42 + 30 + 0, 249, 16, argb(255, 255, 255, 255)
     Page.Paint 0, 42 + 90 - 3, 250, 20, 20, argb(255, 0, 176, 240)
     Page.Writes "你的位置", 42 + 90 + 30 + 0, 249, 16, argb(255, 255, 255, 255)
-    DarkX = IIf(Abs(PX - FX(0)) < 3 And pro = 0, 0, FX(0)): DarkY = IIf(Abs(PY - FY(0)) < 3 And pro = 0, 0, FY(0))
-    If pro > 0 Then
+    DarkX = IIf(Abs(PX - FX(0)) < 3 And Pro = 0, 0, FX(0)): DarkY = IIf(Abs(PY - FY(0)) < 3 And Pro = 0, 0, FY(0))
+    If Pro > 0 Then
         DarkX = PX - 5
         DarkY = PY
     End If
@@ -451,11 +493,11 @@ Public Sub Update()
     
     'snow
     If MapNames = "999" Then
-        StretchBlt Page.CDC, IIf(PX > UBound(Map, 1) / 2, GW, 0), IIf(PY < UBound(Map, 2) / 2, GH, 0), IIf(PX > UBound(Map, 1) / 2, -GW, GW), IIf(PY < UBound(Map, 2) / 2, -GH, GH), Page.CDC, 0, 0, GW, GH, vbSrcCopy
+        StretchBlt Page.CDC, IIf(PX > UBound(map, 1) / 2, GW, 0), IIf(PY < UBound(map, 2) / 2, GH, 0), IIf(PX > UBound(map, 1) / 2, -GW, GW), IIf(PY < UBound(map, 2) / 2, -GH, GH), Page.CDC, 0, 0, GW, GH, vbSrcCopy
     End If
 End Sub
 Public Sub Attacks(i As Integer)
-    LastHp = Hp
+    LastHP = HP
     Dim ATK As Long
     Select Case i
         Case 0
@@ -467,7 +509,7 @@ Public Sub Attacks(i As Integer)
     End Select
     Call NewUGun(11)
     If XLMode = 6 Or XLMode = 8 Then ATK = ATK * 2
-    Hp = Hp - ATK
+    HP = HP - ATK
 End Sub
 Public Sub UpdateSnowStorm()
     '游戏每一帧的过程（绘制过程请放在此处）
@@ -478,8 +520,8 @@ Public Sub UpdateSnowStorm()
     CX = (PX - 0) * 90 - GW / 2 + 45
     CY = (PY - 0) * 90 - GH / 2 + 45
     
-    W = 90 * (UBound(Map, 1) - 1) - IIf(CX >= 0, CX, 0)
-    h = 90 * (UBound(Map, 2) - 1) - IIf(CY >= 0, CY, 0)
+    W = 90 * (UBound(map, 1) - 1) - IIf(CX >= 0, CX, 0)
+    h = 90 * (UBound(map, 2) - 1) - IIf(CY >= 0, CY, 0)
     
     If W > GW Then W = GW
     If h > GH Then h = GH
@@ -519,10 +561,10 @@ Public Sub UpdateSnowStorm()
 
     Page.DrawImage "qing" & IIf(Walking, IIf(GetTickCount Mod 300 < 150, Direction, Direction + 2), Direction + 1) & ".png", GW / 2 - 45, GH / 2 - 45, alpha:=1
     Crash.Reset
-    CanAtk = (Abs(EndX - PX) <= 6 - (1 - (UHP / UMaxHp)) * 3 And Abs(EndY - PY) <= 6 - (1 - (UHP / UMaxHp)) * 3)
+    CanAtk = (Abs(EndX - PX) <= 6 - (1 - (UHP / UMaxHP)) * 3 And Abs(EndY - PY) <= 6 - (1 - (UHP / UMaxHP)) * 3)
     If DIEMark Then CanAtk = False
     
-    Select Case UHP / UMaxHp
+    Select Case UHP / UMaxHP
         Case Is > 0.99
             XLMode = 0
             If XLMode <> LastXLMode Then Says = "那么，欢迎你来到圣光核心检查点。": SayTime = GetTickCount
@@ -625,10 +667,10 @@ Public Sub UpdateSnowStorm()
         ECore.NewTransform transHighLight, 100
     End If
     
-    Dim RemoveCount As Long, pro As Single, MapW As Long, MapH As Long
+    Dim RemoveCount As Long, Pro As Single, MapW As Long, MapH As Long
     Dim DrawX As Long, DrawY As Long
-    MapW = UBound(Map, 1)
-    MapH = UBound(Map, 2)
+    MapW = UBound(map, 1)
+    MapH = UBound(map, 2)
     
     For i = 1 To UBound(UGun)
 Start:
@@ -637,18 +679,18 @@ Start:
 
         Select Case UGun(i).Kind
             Case 0
-                pro = 1
+                Pro = 1
                 If UGun(i).Step < 8 Then
                     If GetTickCount - UGun(i).Time >= 41 Then UGun(i).Step = UGun(i).Step + 1: UGun(i).Time = GetTickCount
                     If UGun(i).Step = 8 Then SE.Play "Ice4.mp3"
                 Else
-                    pro = 1 - (GetTickCount - UGun(i).Time) / 2000
+                    Pro = 1 - (GetTickCount - UGun(i).Time) / 2000
                     If GetTickCount - UGun(i).Time >= 2000 Then GoTo Remove
                 End If
                 DrawX = UGun(i).X * 90 - CX + 45: DrawY = UGun(i).y * 90 - CY + 45
                 If DrawX >= 0 And DrawY >= 0 And DrawX <= GW And DrawY <= GH Then
-                    Page.DrawImage "Ice3_00" & UGun(i).Step & ".png", DrawX, DrawY, alpha:=pro, Pos:=posOnCenter
-                    If pro > 0.6 And UGun(i).Step >= 7 And (Not Crash.CrashResult) Then
+                    Page.DrawImage "Ice3_00" & UGun(i).Step & ".png", DrawX, DrawY, alpha:=Pro, Pos:=posOnCenter
+                    If Pro > 0.6 And UGun(i).Step >= 7 And (Not Crash.CrashResult) Then
                         If Crash.IsCrash Then Attacks (i): GoTo Remove
                     End If
                 End If
@@ -668,19 +710,19 @@ Start:
                     If UGun(i).X < -5 Or UGun(i).y < -5 Or UGun(i).X > MapW + 5 Or UGun(i).y > MapH + 5 Then GoTo Remove
                 End If
             Case 11
-                pro = 1
+                Pro = 1
                 If UGun(i).Step < 7 Then
                     If GetTickCount - UGun(i).Time >= 41 Then UGun(i).Step = UGun(i).Step + 1: UGun(i).Time = GetTickCount
                 Else
-                    pro = 1 - (GetTickCount - UGun(i).Time) / 500
+                    Pro = 1 - (GetTickCount - UGun(i).Time) / 500
                     If GetTickCount - UGun(i).Time >= 500 Then GoTo Remove
                 End If
                 DrawX = UGun(i).X * 90 - CX + 45: DrawY = UGun(i).y * 90 - CY + 45
                 If DrawX >= 0 And DrawY >= 0 And DrawX <= GW And DrawY <= GH Then
-                    Page.DrawImage "HitIce_00" & UGun(i).Step & ".png", DrawX, DrawY, alpha:=pro, Pos:=posOnCenter
+                    Page.DrawImage "HitIce_00" & UGun(i).Step & ".png", DrawX, DrawY, alpha:=Pro, Pos:=posOnCenter
                 End If
             Case 12
-                pro = 1
+                Pro = 1
                 If UGun(i).Step < 23 Then
                     If GetTickCount - UGun(i).Time >= 20 Then UGun(i).Step = UGun(i).Step + 1: UGun(i).Time = GetTickCount
                 Else
@@ -691,7 +733,7 @@ Start:
                     Page.DrawImage "Fire3_0" & format(UGun(i).Step + 1, "00") & ".png", DrawX, DrawY, alpha:=1, Pos:=posOnCenter
                 End If
             Case 13
-                pro = 1
+                Pro = 1
                 If UGun(i).Step < 13 Then
                     If GetTickCount - UGun(i).Time >= 20 Then UGun(i).Step = UGun(i).Step + 1: UGun(i).Time = GetTickCount
                 Else
@@ -727,7 +769,7 @@ Remove:
     PaintDC CoverDC, Page.CDC, IIf(CX < 0, -CX, 0), IIf(CY < 0, -CY, 0), IIf(CX >= 0, CX, 0), IIf(CY >= 0, CY, 0), W, h, 1
     Page.DrawImage "xl" & XLMode & ".png", EndX * 90 - CX, EndY * 90 - CY, alpha:=1
     
-    Page.DrawImage "shadow.png", 0, 0, alpha:=0.6 + Cubic((1 - (UHP / UMaxHp)), 0, 0, 0, 1) * 0.4
+    Page.DrawImage "shadow.png", 0, 0, alpha:=0.6 + Cubic((1 - (UHP / UMaxHP)), 0, 0, 0, 1) * 0.4
 
     If DIEMark = True And Abs(PX - EndX) <= 1 And PY >= EndY And PY - EndY <= 1.5 And (Not BGM.IsPlaying) And Direction = 0 Then
         BGM.rate = 1
@@ -744,10 +786,10 @@ Remove:
     Dim HuaIndex As Integer
     HuaIndex = Page.Res.GetImage("black" & MapNames & ".png")
     
-    If IsKeyPress(VK_UP) And Map(Round(PX), Round(PY - 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 And Not (Round(PX) = EndX And Round(PY - 1) = EndY) Then YRemain = -0.3: Direction = 0
-    If IsKeyPress(VK_DOWN) And Map(Round(PX), Round(PY + 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 And Not (Round(PX) = EndX And Round(PY + 1) = EndY) Then YRemain = 0.3: Direction = 3
-    If IsKeyPress(VK_LEFT) And Map(Round(PX - 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 And Not (Round(PX - 1) = EndX And Round(PY) = EndY) Then XRemain = -0.3: Direction = 6
-    If IsKeyPress(VK_RIGHT) And Map(Round(PX + 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 And Not (Round(PX + 1) = EndX And Round(PY) = EndY) Then XRemain = 0.3: Direction = 9
+    If IsKeyPress(VK_UP) And map(Round(PX), Round(PY - 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 And Not (Round(PX) = EndX And Round(PY - 1) = EndY) Then YRemain = -0.3: Direction = 0
+    If IsKeyPress(VK_DOWN) And map(Round(PX), Round(PY + 1)) <> HuaIndex And XRemain = 0 And YRemain = 0 And Not (Round(PX) = EndX And Round(PY + 1) = EndY) Then YRemain = 0.3: Direction = 3
+    If IsKeyPress(VK_LEFT) And map(Round(PX - 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 And Not (Round(PX - 1) = EndX And Round(PY) = EndY) Then XRemain = -0.3: Direction = 6
+    If IsKeyPress(VK_RIGHT) And map(Round(PX + 1), Round(PY)) <> HuaIndex And XRemain = 0 And YRemain = 0 And Not (Round(PX + 1) = EndX And Round(PY) = EndY) Then XRemain = 0.3: Direction = 9
     
     If BGM.PlayState = musStopped And BGM.length <> 0 And DIEMark = False Then BGM.Play: ATKIndex = 1
     If BGS.PlayState = musStopped And BGS.length <> 0 Then BGS.Play
@@ -764,7 +806,7 @@ Remove:
     If BGM.position > ATKS(ATKIndex) And ATKIndex < UBound(ATKS) And (Not DIEMark) Then
         ATKIndex = ATKIndex + 1
         Call NewUGun(0)
-        If XLMode = 4 Then UHP = UMaxHp
+        If XLMode = 4 Then UHP = UMaxHP
         If XLMode <> 7 Then Call NewUGun(1)
         If XLMode = 3 Or XLMode = 7 Then UHP = UHP + 1
         If XLMode >= 6 Then Call NewUGun(2)
@@ -785,16 +827,16 @@ Remove:
     Page.Writes "X", GW - 80 + 25, GH - 100 + 20, 24, argb(255, 255, 255, 255), style:=FontStyleBold
     
     Page.DrawImage "uhpframe.png", 0, 40, alpha:=1
-    Page.DrawImage "uhpbar.png", 20, 122, 0, 0, UHP / UMaxHp * 196, alpha:=1
+    Page.DrawImage "uhpbar.png", 20, 122, 0, 0, UHP / UMaxHP * 196, alpha:=1
     Page.Writes "雪狼", 15, 47, 28, argb(255, 255, 255, 255)
-    Page.Writes UHP & "/" & UMaxHp, 160, 61, 18, argb(255, 255, 255, 255), 300, 25, StringAlignmentNear, FontStyleItalic
+    Page.Writes UHP & "/" & UMaxHP, 160, 61, 18, argb(255, 255, 255, 255), 300, 25, StringAlignmentNear, FontStyleItalic
     
     Page.DrawImage "mehpframe.png", GW, 40, alpha:=1, Pos:=posOnRight
-    Page.DrawImage "mehpbar.png", GW - 16, 121, 182 - Hp / MaxHp * 182, 0, Hp / MaxHp * 182, alpha:=1, Pos:=posOnRight
+    Page.DrawImage "mehpbar.png", GW - 16, 121, 182 - HP / MaxHP * 182, 0, HP / MaxHP * 182, alpha:=1, Pos:=posOnRight
     Page.Writes "青", GW - 15, 48, 28, argb(255, 255, 255, 255), align:=StringAlignmentFar
-    Page.Writes Hp & "/" & MaxHp, GW - 160 - 80, 61, 18, argb(255, 255, 255, 255), 300, 25, StringAlignmentNear, FontStyleItalic
+    Page.Writes HP & "/" & MaxHP, GW - 160 - 80, 61, 18, argb(255, 255, 255, 255), 300, 25, StringAlignmentNear, FontStyleItalic
     
-    Page.DrawImage "mpbar.png", GW / 2, GH - 14, cw:=MP / MaxMP * GW, alpha:=1, Pos:=posOnCenter
+    Page.DrawImage "mpbar.png", GW / 2, GH - 14, CW:=MP / MaxMP * GW, alpha:=1, Pos:=posOnCenter
     Page.Writes "AP     " & MP & "/" & MaxMP, GW / 2, GH - 50, 18, argb(255, 255, 255, 255), 0, 0, StringAlignmentCenter, FontStyleBold
     
     Page.Paint 2, GW / 2, GH - 105, EF.GetWidth(Page.GG, Says, 18, StringAlignmentCenter, FontStyleRegular) + 80, 40, argb(128, 0, 0, 0), 80, Pos:=posOnCenter
@@ -827,7 +869,7 @@ Remove:
         XLMode = 9
     End If
     
-    If Hp < 300 Then
+    If HP < 300 Then
         BGM.Stops
         GameWindow.BackColor = RGB(120, 0, 0)
         MsgBox "真是太失败了。。。我们再来一次吧？", , "雪狼"
@@ -861,14 +903,14 @@ Public Sub KeyDown(Code As Integer)
         MagicTime = GetTickCount
         Call NewUGun(13)
         MP = MP - 1
-        Hp = LastHp
+        HP = LastHP
     End If
 End Sub
 Public Sub NewUGun(ByVal Kind As Long)
     Randomize
     If Kind = 2 Then
-        EndX = Int(Rnd * (UBound(Map, 1) - 5) + 2)
-        EndY = Int(Rnd * (UBound(Map, 2) - 5) + 2)
+        EndX = Int(Rnd * (UBound(map, 1) - 5) + 2)
+        EndY = Int(Rnd * (UBound(map, 2) - 5) + 2)
         Exit Sub
     End If
     If Kind = 15 Then
@@ -890,8 +932,8 @@ Public Sub NewUGun(ByVal Kind As Long)
                     .X = PX
                     .y = PY
                 Else
-                    .X = Int(Rnd * (UBound(Map, 1) - 5) + 2)
-                    .y = Int(Rnd * (UBound(Map, 2) - 5) + 2)
+                    .X = Int(Rnd * (UBound(map, 1) - 5) + 2)
+                    .y = Int(Rnd * (UBound(map, 2) - 5) + 2)
                 End If
             Case 11
                 .X = PX
@@ -928,7 +970,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, msg As String)
+Public Sub AnimationMsg(id As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -938,6 +980,11 @@ End Sub
 Public Sub Leave()
     '页面离开事件
     WeatherLayer.ChangeWeather ""
+    
+    If MapDC <> 0 Then DeleteObject MapDC: MapDC = 0
+    If CoverDC <> 0 Then DeleteObject CoverDC: CoverDC = 0
+    If MapViewDC <> 0 Then DeleteObject MapViewDC: MapViewDC = 0
+    If TelViewDC <> 0 Then DeleteObject TelViewDC: TelViewDC = 0
 End Sub
 Public Sub Gotfocus()
     '窗口取得焦点事件
@@ -945,7 +992,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(ID As Integer)
+Public Sub AnimationDone(id As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

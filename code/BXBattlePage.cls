@@ -25,21 +25,24 @@ Attribute VB_Exposed = False
     Private Type EXCEMark
         Time As Long
         X As Long
-        Y As Long
+        y As Long
     End Type
     Dim Exce() As EXCEMark
 '======================================
 
 Public Sub Update()
+    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    On Error Resume Next
+    
     '游戏每一帧的过程（绘制过程请放在此处）
     
     Page.Clear '清空画布
 
-    Dim Hot As Long, Map() As Single
+    Dim Hot As Long, map() As Single
     If BGM.IsPlaying Then
-        Map = BGM.GetMusicMap
-        For i = 0 To UBound(Map)
-            Hot = Hot + Map(i)
+        map = BGM.GetMusicMap
+        For i = 0 To UBound(map)
+            Hot = Hot + map(i)
         Next
     End If
     
@@ -53,7 +56,7 @@ Public Sub Update()
     
     Page.Writes Int(BGM.position / BGM.length * 100) & "%", GW / 2, 42, 32, argb(255, 255, 255, 255), align:=StringAlignmentCenter
     
-    Dim W As Long, pro As Single
+    Dim W As Long, Pro As Single
     W = Int(GW / 9)
     
     Page.Paint 0, Int(Mouse.X / W) * W, 0, W, GH + 1, IIf(GetTickCount - HurtTime <= 5000, IIf(GetTickCount Mod 300 < 150, argb(50, 255, 0, 0), argb(255, 255, 0, 0)), argb(50, 255, 255, 255))
@@ -62,9 +65,9 @@ Public Sub Update()
     Speed = 6.2 / (1 + Cubic((BGM.position / BGM.length), 0, 1, 1, 1) * 1.14)
     
     If GetTickCount - LitTime <= 200 Then
-        pro = 1 - (GetTickCount - LitTime) / 200
-        pro = Cubic(pro, 0, 1, 1, 1)
-        Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(128 * pro, 255, 255, 255)
+        Pro = 1 - (GetTickCount - LitTime) / 200
+        Pro = Cubic(Pro, 0, 1, 1, 1)
+        Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(128 * Pro, 255, 255, 255)
     End If
     
     Dim NeverDraw As Boolean
@@ -74,9 +77,9 @@ Public Sub Update()
             If i = NowIndex Then NeverDraw = True
             Exit For
         End If
-        pro = (1 - (Keys(i).Pos - BGM.position) / Speed) * (GH * 0.7 + 90 * 2) - 90 * 1.6
-        Page.DrawImage Keys(i).Pic, W * Keys(i).Area + W / 2, Int(pro), alpha:=IIf(i = NowIndex, 1, 0.6), Pos:=posOnCenter
-        If pro >= GH * 0.75 Then
+        Pro = (1 - (Keys(i).Pos - BGM.position) / Speed) * (GH * 0.7 + 90 * 2) - 90 * 1.6
+        Page.DrawImage Keys(i).Pic, W * Keys(i).Area + W / 2, Int(Pro), alpha:=IIf(i = NowIndex, 1, 0.6), Pos:=posOnCenter
+        If Pro >= GH * 0.75 Then
             If Int(Mouse.X / W) = Keys(i).Area And i = NowIndex Then
                 SE.Play "hit.wav"
                 NowIndex = i + 1
@@ -86,14 +89,14 @@ Public Sub Update()
                     ReDim Preserve Exce(UBound(Exce) + 1)
                     With Exce(UBound(Exce))
                         .X = Mouse.X
-                        .Y = Mouse.Y
+                        .y = Mouse.y
                         .Time = GetTickCount
                     End With
                 End If
             End If
         End If
         
-        If pro > GH Then
+        If Pro > GH Then
             NowIndex = i + 1
             If GetTickCount - HurtTime >= 5000 Then
                 Heart = Heart - 1
@@ -123,14 +126,14 @@ Public Sub Update()
     
     For i = 1 To UBound(Exce)
         If i > UBound(Exce) Then Exit For
-        pro = Cubic((GetTickCount - Exce(i).Time) / 1000, 0, 1, 1, 1)
-        If pro > 1 Then
+        Pro = Cubic((GetTickCount - Exce(i).Time) / 1000, 0, 1, 1, 1)
+        If Pro > 1 Then
             Exce(i) = Exce(UBound(Exce))
             ReDim Preserve Exce(UBound(Exce) - 1)
             GoTo SkipThis
         End If
-        For s = 1 To Len(ExceStr)
-            Page.Writes Mid(ExceStr, s, 1), Exce(i).X + pro * (s - 4) * 40, Exce(i).Y - 9, 18, argb(255 - 255 * pro, 255, 255, 255), align:=StringAlignmentCenter
+        For S = 1 To Len(ExceStr)
+            Page.Writes Mid(ExceStr, S, 1), Exce(i).X + Pro * (S - 4) * 40, Exce(i).y - 9, 18, argb(255 - 255 * Pro, 255, 255, 255), align:=StringAlignmentCenter
         Next
 SkipThis:
     Next

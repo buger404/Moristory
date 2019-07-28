@@ -111,9 +111,6 @@ Private Sub Form_Load()
     Me.Caption = "Moristory Script Editor - PART " & EditIndex
     If Dir(App.Path & "\..\article\PART " & EditIndex & ".mss") <> "" Then
         If MsgBox("这个PART已经存在了，你不会覆盖掉它对不对？", vbYesNo) = vbNo Then End
-        If MsgBox("真的吗？", vbYesNo) = vbNo Then End
-        If MsgBox("你没有手滑吗？", vbYesNo) = vbNo Then End
-        If MsgBox("真的真的？", vbYesNo) = vbNo Then End
         Call MakeBackup
         With MSSList
             .Clear
@@ -137,7 +134,7 @@ End Sub
 
 Private Sub Form_MouseMove(button As Integer, Shift As Integer, X As Single, y As Single)
     '发送鼠标信息
-    If Mouse.State = 0 Then
+    If Mouse.state = 0 Then
         UpdateMouse X, y, 0, button
     Else
         Mouse.X = X: Mouse.y = y

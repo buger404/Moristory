@@ -18,27 +18,30 @@ Attribute VB_Exposed = False
 '======================================
 
 Public Sub Update()
+    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    On Error Resume Next
+
     '游戏每一帧的过程（绘制过程请放在此处）
     
-    Page.Clear '清空画布
+    Page.Clear argb(255, 0, 0, 0) '清空画布
 
-    Page.DrawImage "bg.png", 0, 0, alpha:=1
+    If MyGame <> "final" Then Page.DrawImage "bg.png", 0, 0, alpha:=1
     
     Page.Paint 2, GW / 2, GH / 2, 800, 500, argb(220, 255, 255, 255), 36, Pos:=posOnCenter
     'Page.Paint 0, GW / 2 - 400, GH / 2 - 250, 800, 50, argb(255, 0, 190, 169)
     
-    Page.DrawImage "icon.png", GW / 2, GH / 2 - 250, alpha:=1, Pos:=posOnCenter
+    If MyGame <> "final" Then Page.DrawImage "icon.png", GW / 2, GH / 2 - 250, alpha:=1, Pos:=posOnCenter
     
     'Page.Writes "游戏正式开始", GW / 2, GH / 2 - 250 + 12, 18, argb(255, 27, 27, 27), align:=StringAlignmentCenter
     
-    Page.Writes "操作", GW / 2 - 400 + 40, GH / 2 - 250 + 90, 18, argb(255, 27, 27, 27), style:=FontStyleBold
+    Page.Writes "操作", GW / 2 - 400 + 40, GH / 2 - 250 + 90, 18, IIf(MyGame = "final", argb(255, 255, 0, 0), argb(255, 27, 27, 27)), style:=FontStyleBold
     Page.Writes CtrlText, GW / 2 - 400 + 60 + 60, GH / 2 - 250 + 90, 18, argb(170, 27, 27, 27)
-    Page.Writes "目标", GW / 2 - 400 + 40, GH / 2 - 250 + 90 + 90, 18, argb(255, 27, 27, 27), style:=FontStyleBold
+    Page.Writes "目标", GW / 2 - 400 + 40, GH / 2 - 250 + 90 + 90, 18, IIf(MyGame = "final", argb(255, 255, 0, 0), argb(255, 27, 27, 27)), style:=FontStyleBold
     Page.Writes GoalText, GW / 2 - 400 + 60 + 60, GH / 2 - 250 + 90 + 90, 18, argb(170, 27, 27, 27)
-    Page.Writes "规则", GW / 2 - 400 + 40, GH / 2 - 250 + 90 + 180, 18, argb(255, 27, 27, 27), style:=FontStyleBold
+    Page.Writes "规则", GW / 2 - 400 + 40, GH / 2 - 250 + 90 + 180, 18, IIf(MyGame = "final", argb(255, 255, 0, 0), argb(255, 27, 27, 27)), style:=FontStyleBold
     Page.Writes RequireText, GW / 2 - 400 + 60 + 60, GH / 2 - 250 + 90 + 180, 18, argb(170, 27, 27, 27)
     
-    If Page.ShowSimpleButton("btn.png", GW / 2 - 97, GH - 220, "好的", argb(255, 255, 255, 255), 18) = 3 Then
+    If Page.ShowSimpleButton("btn.png", GW / 2 - 97, GH - 220, IIf(MyGame = "final", "最后一战", "好的"), argb(255, 255, 255, 255), 18) = 3 Then
         Call GoGame
     End If
 End Sub
@@ -71,6 +74,14 @@ Public Sub GoGame()
             ECore.NewTransform transFallDark, 3000, "BXBattlePage"
         Case "fly"
             ECore.NewTransform transToDownFade, 1000, "FlyPage"
+        Case "tlp"
+            ECore.NewTransform transToDownFade, 1000, "TLPPage"
+        Case "dance"
+            ECore.NewTransform transDarkTo, 1000, "DancePage"
+        Case "final"
+            SE.Play "Thunder9.mp3"
+            SE.Play "Thunder9.mp3"
+            ECore.NewTransform 14, 3000, "FinalPage"
     End Select
 End Sub
 Public Sub ShowTip(Game As String)
@@ -131,13 +142,29 @@ Public Sub ShowTip(Game As String)
             RequireText = "你可以撞到柱子3次而安然无恙。" & vbCrLf & _
                           "尽量不要去撞障碍物，很疼。" & vbCrLf & _
                           "别让自己摔死了。"
+        Case "tlp"
+            CtrlText = "选择你手中的四张牌进行攻击。"
+            GoalText = "在自己的血量高于300的前提下，将塔克的血量降到300以下。"
+            RequireText = "每个回合你可以抽取3~6张牌。" & vbCrLf & _
+                          "每个回合你可以使用4张牌。" & vbCrLf & _
+                          "塔克有时候会吓到你使你无法行动和抽牌。"
+        Case "dance"
+            CtrlText = "按照指示按键盘上的↑↓←→"
+            GoalText = "完成这场舞蹈。"
+            RequireText = "雅月将会和你一起跳舞。" & vbCrLf & "雅月将会告诉你接下来的动作。" & vbCrLf & "你只能失误5次。"
+        Case "final"
+            CtrlText = "按键盘上的↑↓←→操作，选取攻击和避开弹幕。"
+            GoalText = "？？？？？"
+            RequireText = "？？？？？？？？？？？？"
+        Case "ending"
+            ECore.NewTransform transFallDark, 1000, "EndingPage"
     End Select
 End Sub
 Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, msg As String)
+Public Sub AnimationMsg(id As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -152,7 +179,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(ID As Integer)
+Public Sub AnimationDone(id As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

@@ -1,22 +1,22 @@
 name attackbg2|position 1|tick 41
 :Channel Default
    {
-      HitThunder_001.png(0.75,1.00,0,-7)
+      HitThunder2_001.png(1,1.00,0,-7)
    }
    {
-      HitThunder_002.png(0.75,1.00,0,-7)
+      HitThunder2_002.png(1,1.00,0,-7)
    }
    {
-      HitThunder_003.png(0.75,1.00,0,-7)
+      HitThunder2_003.png(1,1.00,0,-7)
    }
    {
-      HitThunder_004.png(0.75,1.00,0,-7)
+      HitThunder2_004.png(1,1.00,0,-7)
    }
    {
-      HitThunder_005.png(0.75,1.00,0,-7)
+      HitThunder2_005.png(1,1.00,0,-7)
    }
    {
-      HitThunder_006.png(0.75,1.00,0,-7)
+      HitThunder2_006.png(1,1.00,0,-7)
    }
 :Channel Reserve
    {stay|msg "ok"

@@ -26,12 +26,12 @@ Public EmHeight As Long
         If fFam = 0 Then GdipCreateFontFamilyFromName StrPtr("System"), 0, fFam
         
         Dim Flag As Long
-        For I = 0 To 2
-            GdipCreateStringFormat 0, 0, StrF(I)
-            GdipSetStringFormatAlign StrF(I), I
+        For i = 0 To 2
+            GdipCreateStringFormat 0, 0, StrF(i)
+            GdipSetStringFormatAlign StrF(i), i
             'GdipStringFormatGetGenericTypographic strF(i)
-            GdipGetStringFormatFlags StrF(I), Flag
-            GdipSetStringFormatFlags StrF(I), (Flag Or StringFormatFlagsMeasureTrailingSpaces)
+            GdipGetStringFormatFlags StrF(i), Flag
+            GdipSetStringFormatFlags StrF(i), (Flag Or StringFormatFlagsMeasureTrailingSpaces)
         Next
         PoolCreateSolidFill argb(255, 64, 64, 64), brush
         
@@ -42,12 +42,12 @@ Public EmHeight As Long
         If fFile <> "" Then RemoveFontResource fFile
         Exit Sub
         PoolDeleteBrush brush
-        For I = 0 To 2
-            PoolDeleteStringFormat StrF(I)
+        For i = 0 To 2
+            PoolDeleteStringFormat StrF(i)
         Next
         For S = 0 To 8
-            For I = 1 To 100
-                If Font(S, I) <> 0 Then PoolDeleteFont Font(S, I)
+            For i = 1 To 100
+                If Font(S, i) <> 0 Then PoolDeleteFont Font(S, i)
             Next
        Next
     End Sub
@@ -60,17 +60,17 @@ Public EmHeight As Long
 '========================================================
 '   Writer
     Public Function GetWidth(g As Long, Text As String, Size As Long, ByVal align As StringAlignment, ByVal style As FontStyle) As Long
-        Dim r As RECTF, r2 As RECTF
-        GdipMeasureString g, StrPtr(Text), Len(Text), Font(style, Size), r2, StrF(align), r, 0, 0
+        Dim R As RECTF, r2 As RECTF
+        GdipMeasureString g, StrPtr(Text), Len(Text), Font(style, Size), r2, StrF(align), R, 0, 0
         
-        GetWidth = r.Right
+        GetWidth = R.Right
     End Function
     Public Function GetHeight(g As Long, Text As String, Size As Long, ByVal align As StringAlignment, ByVal style As FontStyle) As Long
-        Dim r As RECTF, r2 As RECTF
+        Dim R As RECTF, r2 As RECTF
         If Font(style, Size) = 0 Then PoolCreateFont fFam, Size, style, UnitPixel, Font(style, Size)
-        GdipMeasureString g, StrPtr(Text), Len(Text), Font(style, Size), r2, StrF(align), r, 0, 0
+        GdipMeasureString g, StrPtr(Text), Len(Text), Font(style, Size), r2, StrF(align), R, 0, 0
         
-        GetHeight = r.Bottom
+        GetHeight = R.Bottom
     End Function
     Public Sub Writes(Text As String, X As Long, y As Long, g As Long, Color As Long, Size As Long, W As Long, h As Long, ByVal align As StringAlignment, ByVal style As FontStyle)
         'On Error Resume Next

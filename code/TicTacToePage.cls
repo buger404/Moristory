@@ -24,29 +24,29 @@ Public Function IsWon(Char As Long) As Boolean
     
     For y = 0 To 2
         Count = 0
-        For x = 0 To 2
-            If Chess(x, y) >= Char And Chess(x, y) <= Char + 2 Then Count = Count + 1
+        For X = 0 To 2
+            If Chess(X, y) >= Char And Chess(X, y) <= Char + 2 Then Count = Count + 1
         Next
         If Count = 3 Then IsWon = True: WSX1 = 0: WSY1 = y: WSX2 = 2: WSY2 = y: Exit Function
     Next
     
-    For x = 0 To 2
+    For X = 0 To 2
         Count = 0
         For y = 0 To 2
-            If Chess(x, y) >= Char And Chess(x, y) <= Char + 2 Then Count = Count + 1
+            If Chess(X, y) >= Char And Chess(X, y) <= Char + 2 Then Count = Count + 1
         Next
-        If Count = 3 Then IsWon = True: WSX1 = x: WSY1 = 0: WSX2 = x: WSY2 = 2: Exit Function
+        If Count = 3 Then IsWon = True: WSX1 = X: WSY1 = 0: WSX2 = X: WSY2 = 2: Exit Function
     Next
     
     Count = 0
-    For x = 0 To 2
-        If Chess(x, x) >= Char And Chess(x, x) <= Char + 2 Then Count = Count + 1
+    For X = 0 To 2
+        If Chess(X, X) >= Char And Chess(X, X) <= Char + 2 Then Count = Count + 1
     Next
     If Count = 3 Then IsWon = True: WSX1 = 0: WSY1 = 0: WSX2 = 2: WSY2 = 2: Exit Function
     
     Count = 0
-    For x = 0 To 2
-        If Chess(2 - x, x) >= Char And Chess(2 - x, x) <= Char + 2 Then Count = Count + 1
+    For X = 0 To 2
+        If Chess(2 - X, X) >= Char And Chess(2 - X, X) <= Char + 2 Then Count = Count + 1
     Next
     If Count = 3 Then IsWon = True: WSX1 = 2: WSY1 = 0: WSX2 = 0: WSY2 = 2: Exit Function
 End Function
@@ -58,44 +58,44 @@ Public Sub PlayChessXX()
     
     For y = 0 To 2
         Count = 0: Air1 = -1
-        For x = 0 To 2
-            If Chess(x, y) >= 10 And Chess(x, y) <= 12 Then
+        For X = 0 To 2
+            If Chess(X, y) >= 10 And Chess(X, y) <= 12 Then
                 Count = Count + 1
-            ElseIf Chess(x, y) = 0 And Air1 = -1 Then
-                Air1 = x: Air2 = y
+            ElseIf Chess(X, y) = 0 And Air1 = -1 Then
+                Air1 = X: Air2 = y
             End If
         Next
         If Air1 <> -1 And Count > AirCount Then AirX = Air1: AirY = Air2: AirCount = Count
     Next
     
-    For x = 0 To 2
+    For X = 0 To 2
         Count = 0: Air1 = -1
         For y = 0 To 2
-            If Chess(x, y) >= 10 And Chess(x, y) <= 12 Then
+            If Chess(X, y) >= 10 And Chess(X, y) <= 12 Then
                 Count = Count + 1
-            ElseIf Chess(x, y) = 0 And Air1 = -1 Then
-                Air1 = x: Air2 = y
+            ElseIf Chess(X, y) = 0 And Air1 = -1 Then
+                Air1 = X: Air2 = y
             End If
         Next
         If Air1 <> -1 And Count > AirCount Then AirX = Air1: AirY = Air2: AirCount = Count
     Next
     
     Count = 0: Air1 = -1
-    For x = 0 To 2
-        If Chess(x, x) >= 10 And Chess(x, x) <= 12 Then
+    For X = 0 To 2
+        If Chess(X, X) >= 10 And Chess(X, X) <= 12 Then
             Count = Count + 1
-        ElseIf Chess(x, x) = 0 And Air1 = -1 Then
-            Air1 = x: Air2 = x
+        ElseIf Chess(X, X) = 0 And Air1 = -1 Then
+            Air1 = X: Air2 = X
         End If
     Next
     If Air1 <> -1 And (Count > AirCount Or NeverChess) Then AirX = Air1: AirY = Air2: AirCount = Count
     
     Count = 0: Air1 = -1
-    For x = 0 To 2
-        If Chess(2 - x, x) >= 10 And Chess(2 - x, x) <= 12 Then
+    For X = 0 To 2
+        If Chess(2 - X, X) >= 10 And Chess(2 - X, X) <= 12 Then
             Count = Count + 1
-        ElseIf Chess(2 - x, x) = 0 And Air1 = -1 Then
-            Air1 = 2 - x: Air2 = x
+        ElseIf Chess(2 - X, X) = 0 And Air1 = -1 Then
+            Air1 = 2 - X: Air2 = X
         End If
     Next
     If Air1 <> -1 And (Count > AirCount Or NeverChess) Then AirX = Air1: AirY = Air2: AirCount = Count
@@ -111,29 +111,32 @@ Public Sub PlayChessXX()
     End If
 End Sub
 Public Sub Update()
+    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    On Error Resume Next
+
     '游戏每一帧的过程（绘制过程请放在此处）
     
     Page.Clear '清空画布
 
-    Page.DrawImage "desk.png", -70, -GH * 0.2, Alpha:=1
+    Page.DrawImage "desk.png", -70, -GH * 0.2, alpha:=1
     
-    For x = 0 To 2
+    For X = 0 To 2
         For y = 0 To 2
-            Page.Paint 0, 370 + x * 128, 180 + y * 128, 129, 129, argb(150, 64, 64, 64), style:=1
-            If Chess(x, y) <> 0 Then
-                If Chess(x, y) >= 20 Then
-                    Page.DrawImage "bm" & (Chess(x, y) Mod 20) & ".png", 370 + x * 128, 180 + y * 128, Alpha:=1
-                ElseIf Chess(x, y) >= 10 Then
-                    Page.DrawImage "circle" & (Chess(x, y) Mod 10) & ".png", 370 + x * 128, 180 + y * 128, Alpha:=1
+            Page.Paint 0, 370 + X * 128, 180 + y * 128, 129, 129, argb(150, 64, 64, 64), style:=1
+            If Chess(X, y) <> 0 Then
+                If Chess(X, y) >= 20 Then
+                    Page.DrawImage "bm" & (Chess(X, y) Mod 20) & ".png", 370 + X * 128, 180 + y * 128, alpha:=1
+                ElseIf Chess(X, y) >= 10 Then
+                    Page.DrawImage "circle" & (Chess(X, y) Mod 10) & ".png", 370 + X * 128, 180 + y * 128, alpha:=1
                 End If
             End If
-            If CheckMouse2 = mMouseUp And Chess(x, y) = 0 And Round = 0 Then
+            If CheckMouse2 = mMouseUp And Chess(X, y) = 0 And Round = 0 Then
                 SE.Play "Cursor.mp3"
                 Randomize
-                Chess(x, y) = 10 + Int(Rnd * 3)
+                Chess(X, y) = 10 + Int(Rnd * 3)
                 Round = 1: RoundTime = GetTickCount: RoundText = Int(Rnd * 5)
                 ECore.NewTransform
-                If Chess(x, y) > 12 Then Chess(x, y) = 12
+                If Chess(X, y) > 12 Then Chess(X, y) = 12
             End If
         Next
     Next
@@ -163,12 +166,12 @@ Public Sub Update()
     End If
     
     If Round = 3 Then
-        Dim pro As Single
-        pro = (GetTickCount - RoundTime) / 1000
-        pro = Cubic(pro, 0, 1, 1, 1)
-        If pro >= 1 Then pro = 1
+        Dim Pro As Single
+        Pro = (GetTickCount - RoundTime) / 1000
+        Pro = Cubic(Pro, 0, 1, 1, 1)
+        If Pro >= 1 Then Pro = 1
         
-        Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(pro * 255 * IIf(XXWon Or MeWon, 0.3, 1), 0, 0, 0)
+        Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(Pro * 255 * IIf(XXWon Or MeWon, 0.3, 1), 0, 0, 0)
         If XXWon Or MeWon Then
             Page.Writes IIf(XXWon, "兮兮", "青") & "胜利了！", GW / 2, GH / 2 - 18, 36, argb(255, 255, 255, 255), align:=StringAlignmentCenter
         Else
@@ -207,7 +210,7 @@ Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, msg As String)
+Public Sub AnimationMsg(id As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -224,7 +227,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(ID As Integer)
+Public Sub AnimationDone(id As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub

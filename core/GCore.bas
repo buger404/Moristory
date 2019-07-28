@@ -63,11 +63,11 @@ Attribute VB_Name = "GCore"
         Hwnd As Long
         ImgHwnd As Long
         Imgs(3) As Long
-        name As String
+        Name As String
         Folder As String
         W As Long
         h As Long
-        copyed As Boolean
+        Copyed As Boolean
         CrashIndex As Long
     End Type
     Public Type AssetsTree
@@ -245,9 +245,9 @@ Attribute VB_Name = "GCore"
         TerminateGDIPlus
         If BassInstalled Then BASS_Free
     End Sub
-    Public Sub MakeFont(ByVal name As String)
+    Public Sub MakeFont(ByVal Name As String)
         Set EF = New GFont
-        EF.MakeFont name
+        EF.MakeFont Name
     End Sub
 '========================================================
 '   RunTime
@@ -282,7 +282,7 @@ sth:
         GetWinNTVersion = Left(strOSversion, 3)
     End Function
     Public Sub BlurTo(DC As Long, srcDC As Long, buffWin As Form, Optional Radius As Long = 60)
-        Dim i As Long, g As Long, e As Long, b As BlurParams, W As Long, h As Long
+        Dim i As Long, g As Long, e As Long, B As BlurParams, W As Long, h As Long
         '粘贴到缓冲窗口
         buffWin.AutoRedraw = True
         BitBlt buffWin.hdc, 0, 0, GW, GH, srcDC, 0, 0, vbSrcCopy: buffWin.Refresh
@@ -291,7 +291,7 @@ sth:
         GdipCreateBitmapFromHBITMAP buffWin.Image.handle, buffWin.Image.hpal, i
         
         '模糊操作
-        PoolCreateEffect2 GdipEffectType.Blur, e: b.Radius = Radius: GdipSetEffectParameters e, b, LenB(b)
+        PoolCreateEffect2 GdipEffectType.Blur, e: B.Radius = Radius: GdipSetEffectParameters e, B, LenB(B)
         GdipGetImageWidth i, W: GdipGetImageHeight i, h
         GdipBitmapApplyEffect i, e, NewRectL(0, 0, W, h), 0, 0, 0
         
@@ -302,39 +302,39 @@ sth:
         buffWin.AutoRedraw = False
     End Sub
     Public Sub BlurImg(Img As Long, Radius As Long)
-        Dim b As BlurParams, e As Long, W As Long, h As Long
+        Dim B As BlurParams, e As Long, W As Long, h As Long
         
         '模糊操作
 
-        PoolCreateEffect2 GdipEffectType.Blur, e: b.Radius = Radius: GdipSetEffectParameters e, b, LenB(b)
+        PoolCreateEffect2 GdipEffectType.Blur, e: B.Radius = Radius: GdipSetEffectParameters e, B, LenB(B)
         GdipGetImageWidth Img, W: GdipGetImageHeight Img, h
         GdipBitmapApplyEffect Img, e, NewRectL(0, 0, W, h), 0, 0, 0
         
         '画~
         PoolDeleteEffect e '垃圾处理
     End Sub
-    Public Sub PaintDC(DC As Long, destDC As Long, Optional X As Long = 0, Optional y As Long = 0, Optional CX As Long = 0, Optional CY As Long = 0, Optional cw, Optional ch, Optional alpha)
-        Dim b As BLENDFUNCTION, index As Integer, bl As Long
+    Public Sub PaintDC(DC As Long, destDC As Long, Optional X As Long = 0, Optional y As Long = 0, Optional CX As Long = 0, Optional CY As Long = 0, Optional CW, Optional CH, Optional alpha)
+        Dim B As BLENDFUNCTION, index As Integer, bl As Long
         
         If Not IsMissing(alpha) Then
             If alpha < 0 Then alpha = 0
             If alpha > 1 Then alpha = 1
-            With b
+            With B
                 .AlphaFormat = &H1
                 .BlendFlags = &H0
                 .BlendOp = 0
                 .SourceConstantAlpha = Int(alpha * 255)
             End With
-            CopyMemory bl, b, 4
+            CopyMemory bl, B, 4
         End If
         
-        If IsMissing(cw) Then cw = GW - CX
-        If IsMissing(ch) Then ch = GH - CY
+        If IsMissing(CW) Then CW = GW - CX
+        If IsMissing(CH) Then CH = GH - CY
         
         If IsMissing(alpha) Then
-            BitBlt destDC, X, y, cw, ch, DC, CX, CY, vbSrcCopy
+            BitBlt destDC, X, y, CW, CH, DC, CX, CY, vbSrcCopy
         Else
-            AlphaBlend destDC, X, y, cw, ch, DC, CX, CY, cw, ch, bl
+            AlphaBlend destDC, X, y, CW, CH, DC, CX, CY, CW, CH, bl
         End If
     End Sub
     Function Cubic(t As Single, arg0 As Single, arg1 As Single, arg2 As Single, arg3 As Single) As Single
@@ -388,9 +388,9 @@ sth:
     End Function
 '========================================================
 '   Screen Window
-    Public Function StartScreenDialog(W As Long, h As Long, ch As Object) As Object
+    Public Function StartScreenDialog(W As Long, h As Long, CH As Object) As Object
         Set StartScreenDialog = New EmeraldWindow
-        StartScreenDialog.NewFocusWindow W, h, ch
+        StartScreenDialog.NewFocusWindow W, h, CH
         Dim f As Object
         For Each f In VB.Forms
             If TypeName(f) <> "EmeraldWindow" Then f.Enabled = False
@@ -463,9 +463,38 @@ sth:
             End If
         Next
     End Function
+    Public Sub UpdateAssetsTree(Path As String, arg1 As Variant, arg2 As Variant, Mem As GMem)
+        On Error Resume Next
+        For i = 1 To UBound(AssetsTrees)
+            If AssetsTrees(i).Path = Path And AssetsTrees(i).arg1 = arg1 And AssetsTrees(i).arg2 = arg2 Then
+                If Err.Number <> 0 Then
+                    Err.Clear
+                Else
+                    ReDim Preserve AssetsTrees(i).Files(UBound(AssetsTrees(i).Files) + 1)
+                    AssetsTrees(i).Files(UBound(AssetsTrees(i).Files)) = Mem
+                End If
+            End If
+        Next
+    End Sub
     Public Function GetAssetsTree(Path As String) As AssetsTree
         For i = 1 To UBound(AssetsTrees)
             If AssetsTrees(i).Path = Path Then GetAssetsTree = AssetsTrees(i): Exit For
+        Next
+    End Function
+    Public Function FindAssetsFromTree(Path As String, arg1 As Variant, arg2 As Variant) As GMem
+        On Error Resume Next
+        For i = 1 To UBound(AssetsTrees)
+            If Path Like AssetsTrees(i).Path & "*" Then
+                If AssetsTrees(i).arg1 = arg1 And AssetsTrees(i).arg2 = arg2 Then
+                    If Err.Number <> 0 Then
+                        Err.Clear
+                    Else
+                        For S = 0 To UBound(AssetsTrees(i).Files)
+                            If AssetsTrees(i).Path & AssetsTrees(i).Files(S).Name = Path Then FindAssetsFromTree = AssetsTrees(i).Files(S): Exit Function
+                        Next
+                    End If
+                End If
+            End If
         Next
     End Function
 '========================================================

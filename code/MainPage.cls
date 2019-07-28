@@ -24,7 +24,12 @@ Attribute VB_Exposed = False
 '======================================
 
 Public Sub Update()
+    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    On Error Resume Next
+
     '游戏每一帧的过程（绘制过程请放在此处）
+    
+    'MsgBox 1 / 0
     
     If GetTickCount - StarTime <= 25 Then Exit Sub
     StarTime = GetTickCount
@@ -33,11 +38,11 @@ Public Sub Update()
     ODC = Page.CDC: OGG = Page.GG
     Page.CDC = StarDC: Page.GG = StarGG
     
-    Dim Hot As Long, Map() As Single
+    Dim Hot As Long, map() As Single
     If BGM.IsPlaying Then
-        Map = BGM.GetMusicMap
-        For i = 0 To UBound(Map)
-            Hot = Hot + Map(i)
+        map = BGM.GetMusicMap
+        For i = 0 To UBound(map)
+            Hot = Hot + map(i)
         Next
     End If
     
@@ -117,7 +122,7 @@ Public Sub Update()
     Page.DrawImage "logoblur.png", GW / 2, 300, alpha:=lPro, Pos:=posOnCenter
     
     If GetTickCount Mod 1000 < 500 Then Page.Writes "- 点击开始 -", GW / 2, GH / 2 + 110, 18, argb(255, 255, 255, 255), align:=StringAlignmentCenter, style:=FontStyleBold
-    Page.Writes "PART " & ESave.GetData("PART") & "  " & PartName, GW / 2, GH / 2 - 10, 18, argb(200, 255, 255, 255), align:=StringAlignmentCenter
+    Page.Writes "Chapter " & ESave.GetData("PART") & "  " & PartName, GW / 2, GH / 2 - 10, 18, argb(200, 255, 255, 255), align:=StringAlignmentCenter
     
     If CheckMouse(0, 0, GW, GH) = mMouseDown And LoadTime = 0 And GetTickCount - NoTime >= 1000 Then
         Mouse.state = 0
@@ -145,16 +150,17 @@ Public Sub Update()
         ECore.NewTransform transFadeIn, , "NovelPage"
     End If
     
-    Page.Writes "MORISTORY PREVIEW VERSION 719 POWERED BY EMERALD , MADE BY ERROR404 (QQ 1361778219) .", GW / 2, GH - 43, 16, argb(105, 255, 255, 255), align:=StringAlignmentCenter
+    Page.Writes "MORISTORY POWERED BY EMERALD , MADE BY ERROR404 (QQ 1361778219) .", GW / 2, GH - 43, 16, argb(105, 255, 255, 255), align:=StringAlignmentCenter
     Page.Writes "游戏中所有音乐，音效和部分图片资源，均从网络免费正规渠道获取。", GW / 2, GH - 73, 16, argb(105, 255, 255, 255), align:=StringAlignmentCenter
 
+    Page.Writes "小说版地址：https://shequ.codemao.cn/wiki/novel/cover/47294", GW / 2, GH - 133, 16, argb(105, 255, 255, 255), align:=StringAlignmentCenter
 End Sub
 
 Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件
     'Direction:方向，Depth：深度
 End Sub
-Public Sub AnimationMsg(ID As String, msg As String)
+Public Sub AnimationMsg(id As String, msg As String)
     '动画消息接收
 End Sub
 Public Sub Enter()
@@ -176,7 +182,7 @@ End Sub
 Public Sub Lostfocus()
     '窗口失去焦点事件
 End Sub
-Public Sub AnimationDone(ID As Integer)
+Public Sub AnimationDone(id As Integer)
     '动画播放结束事件
     'id：结束的动画ID
 End Sub
@@ -188,7 +194,7 @@ Private Sub Class_Initialize()
     Page.Res.HotLoad = True
     Page.Res.NewImages App.Path & "\assets\stars", 0.8
     Page.Res.NewImages App.Path & "\assets\ui", 0.5
-    Page.Res.newImage App.Path & "\assets\stars\logo.png", 0.8, name:="logoblur.png"
+    Page.Res.newImage App.Path & "\assets\stars\logo.png", 0.8, Name:="logoblur.png"
     Page.Res.ApplyBlurEffect "logoblur.png", 30, 0
 
     StarDC = CreateCDC(GW, GH)

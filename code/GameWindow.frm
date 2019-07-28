@@ -3,11 +3,12 @@ Begin VB.Form GameWindow
    Appearance      =   0  'Flat
    BackColor       =   &H80000005&
    BorderStyle     =   1  'Fixed Single
-   Caption         =   "Moristory DEMO"
+   Caption         =   "Moristory"
    ClientHeight    =   6672
    ClientLeft      =   48
    ClientTop       =   396
    ClientWidth     =   9660
+   Icon            =   "GameWindow.frx":0000
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
@@ -36,7 +37,9 @@ End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
     'BXBattlePage.KeyDown KeyCode
-
+    If ECore.ActivePage = "DancePage" Then
+        DancePage.KeyUp KeyCode
+    End If
 End Sub
 
 Private Sub Form_KeyPress(KeyAscii As Integer)
@@ -49,7 +52,9 @@ Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
     If ECore.ActivePage = "NovelPage" Then
         NovelPage.KeyUp KeyCode
     End If
+    
     If KeyCode = vbKeyS Then WeatherLayer.SwitchSetting
+
     If App.LogMode = 0 And KeyCode = vbKeyF3 Then WeatherLayer.SwitchDebug
 End Sub
 
@@ -60,10 +65,6 @@ Private Sub Form_Load()
     MakeFont "微软雅黑"
     '创建页面管理器
     Set EC = New GMan
-    
-    '创建存档（可选）
-    Set ESave = New GSaving
-    ESave.Create "Moristory.TIMELINE", "kj" & Val(Me.Visible) & "Ehsd" & Val(VB.Screen.FontCount <> 0) & "Cdfd" & Right(Left("54B89", 3), 1) & "3fdkg5" & UCase("d") & "gsA6D1F7305BEjAC8738C" & CLng("&HE2") & "kjgds"
 
     '开始显示
     Me.Show
@@ -75,6 +76,12 @@ Private Sub Form_Load()
     SE.Create App.Path & "\music\se"
     BGS.Volume = 0.3
     
+    Set ErrorPage = New ErrorPage
+    
+    '创建存档（可选）
+    Set ESave = New GSaving
+    ESave.Create "Moristory.TIMELINE", "kj" & Val(Me.Visible) & "Ehsd" & Val(VB.Screen.FontCount <> 0) & "Cdfd" & Right(Left("54B89", 3), 1) & "3fdkg5" & UCase("d") & "gsA6D1F7305BEjAC8738C" & CLng("&HE2") & "kjgds"
+
     '在此处初始化你的页面
     '=============================================
     '示例：TestPage.cls
@@ -89,11 +96,15 @@ Private Sub Form_Load()
         Set SnowmanPage = New SnowmanPage
         Set TipPage = New TipPage
         Set FlyPage = New FlyPage
+        Set TLPPage = New TLPPage
+        Set DancePage = New DancePage
+        Set FinalPage = New FinalPage
+        Set EndingPage = New EndingPage
         Set WeatherLayer = New WeatherLayer
     '=============================================
 
     '设置活动页面
-    EC.ActivePage = "MainPage"
+    If EC.ActivePage = "" Then EC.ActivePage = "MainPage"
     
     Dim Time As Long, FPSTime As Long, FPS As Long, FPSTick As Long, FPSTarget As Long
     Dim LockFPS1 As Long, LockFPS2 As Long, Changed As Boolean
@@ -135,22 +146,22 @@ Private Sub Form_Load()
     
 End Sub
 
-Private Sub Form_MouseDown(button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Form_MouseDown(button As Integer, Shift As Integer, X As Single, y As Single)
     '发送鼠标信息
-    UpdateMouse X, Y, 1, button
+    UpdateMouse X, y, 1, button
 End Sub
 
-Private Sub Form_MouseMove(button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Form_MouseMove(button As Integer, Shift As Integer, X As Single, y As Single)
     '发送鼠标信息
     If Mouse.state = 0 Then
-        UpdateMouse X, Y, 0, button
+        UpdateMouse X, y, 0, button
     Else
-        Mouse.X = X: Mouse.Y = Y
+        Mouse.X = X: Mouse.y = y
     End If
 End Sub
-Private Sub Form_MouseUp(button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Form_MouseUp(button As Integer, Shift As Integer, X As Single, y As Single)
     '发送鼠标信息
-    UpdateMouse X, Y, 2, button
+    UpdateMouse X, y, 2, button
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
