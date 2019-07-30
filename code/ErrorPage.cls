@@ -15,6 +15,7 @@ Attribute VB_Exposed = False
 '   页面绘制器
     Dim Page As GPage
     Public ErrText As String
+    Public IgnoreTime As Long
 '======================================
 
 Public Sub Update()
@@ -39,7 +40,20 @@ Public Sub Update()
     
     Page.Writes ErrText, 100, 240, 18, argb(255, 255, 255, 255)
 
-    Page.Writes "请尝试通过以下方式反馈问题：" & vbCrLf & vbCrLf & "① 联系QQ1361778219" & vbCrLf & "② 发送邮件至ris_vb@126.com" & vbCrLf & "③ 在Github页面上提交Issue" & vbCrLf & "④ 顺着网线爬到404家", 100, 370, 18, argb(255, 255, 255, 255)
+    If InStr(ErrText, "当你") <> 1 Then
+        Page.Writes "请尝试通过以下方式忘记：" & vbCrLf & vbCrLf & "① 断开电源" & vbCrLf & "② 使自己的脑部受到猛烈撞击" & vbCrLf & "③ 忘记在Github页面上提交Issue" & vbCrLf & "④ 顺着网线爬到404家让404帮你忘记", 100, 370, 18, argb(255, 255, 255, 255)
+    Else
+        Page.Writes "请尝试通过以下方式反馈问题：" & vbCrLf & vbCrLf & "① 联系QQ1361778219" & vbCrLf & "② 发送邮件至ris_vb@126.com" & vbCrLf & "③ 在Github页面上提交Issue" & vbCrLf & "④ 顺着网线爬到404家", 100, 370, 18, argb(255, 255, 255, 255)
+    End If
+    
+    Dim m As Integer
+    m = CheckMouse(100, 580, 100, 20)
+    Page.Writes "[ 强制继续 ]", 100, 580, 18, IIf(m, argb(255, 255, 255, 255), argb(200, 255, 255, 255)), style:=FontStyleUnderline
+    If m = 3 Then
+        If Not WeatherLayer Is Nothing Then WeatherLayer.Page.TopPage = True
+        ECore.NewTransform transDarkTo, 1000, IIf(LastPage = "", "MainPage", LastPage)
+        IgnoreTime = GetTickCount
+    End If
 End Sub
 Public Sub Wheel(Direction As Integer, Depth As Single)
     '鼠标滚轮事件

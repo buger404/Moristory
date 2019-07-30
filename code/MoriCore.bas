@@ -17,6 +17,9 @@ Public DancePage As DancePage
 Public FinalPage As FinalPage
 Public EndingPage As EndingPage
 Public ErrorPage As ErrorPage
+
+Public LastPage As String
+
 Public Function GetPartTitle(Part As String) As String
     Dim temp As String
     Open App.Path & "\article\PART " & Part & ".mss" For Input As #1
@@ -28,6 +31,8 @@ Public Function GetPartTitle(Part As String) As String
 End Function
 
 Public Sub ErrCrash(Num As Long, Str As String)
+    If GetTickCount - ErrorPage.IgnoreTime <= 5000 Then Exit Sub
+
     Dim NewStr As String
     NewStr = Str
     Select Case Num
@@ -48,7 +53,14 @@ Public Sub ErrCrash(Num As Long, Str As String)
         Case 75: NewStr = "404给了我一个错误的地址！"
         Case 76: NewStr = "404让我来到已经拆迁的公寓。"
     End Select
-    ErrorPage.ErrText = IIf(ECore.ActivePage = "", "游戏似乎根本没有正常启动(" & Num & ")。", "当你在<" & ECore.ActivePage & ">里玩耍的时候，游戏内部发生了一些问题(" & Num & ")。") & vbCrLf & NewStr & vbCrLf & "黑嘴表示非常抱歉，您可以尝试重新开启游戏或反馈此问题。"
+    
+    LastPage = ECore.ActivePage
+    If Num = 404233 Then
+        ErrorPage.ErrText = "游戏没有问题，只是被迫终止。" & vbCrLf & NewStr & vbCrLf & "黑嘴表示 不 非常抱歉，您可以忘记刚才按到了什么。"
+    Else
+        ErrorPage.ErrText = IIf(ECore.ActivePage = "", "游戏似乎根本没有正常启动(" & Num & ")。", "当你在<" & ECore.ActivePage & ">里玩耍的时候，游戏内部发生了一些问题(" & Num & ")。") & vbCrLf & NewStr & vbCrLf & "黑嘴表示非常抱歉，您可以尝试重新开启游戏或反馈此问题。"
+    End If
+    
     If Not WeatherLayer Is Nothing Then WeatherLayer.Page.TopPage = False
     ECore.ActivePage = "ErrorPage"
 End Sub

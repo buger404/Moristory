@@ -23,10 +23,11 @@ Attribute VB_Exposed = False
     Dim Blockers() As BlockerInfo
     Dim Crash As New GCrashBox
     Dim Heart As Long, HurtTime As Long
+    Dim NoPower As Boolean, HitTop As Long
 '======================================
 
 Public Sub Update()
-    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    If Err.Number <> 0 Then ErrCrash Err.Number, Err.Description
     On Error Resume Next
 
     '游戏每一帧的过程（绘制过程请放在此处）
@@ -60,10 +61,11 @@ Public Sub Update()
     
     Dim IsHurt As Boolean
     
-    If PY > GH Then Heart = 0
+    If PY > GH Then Heart = 0: NoPower = False
     If Crash.CrashResult Then IsHurt = True
     
     If IsHurt And GetTickCount - HurtTime > 3000 Then
+        NoPower = False
         Heart = Heart - 1
         HurtTime = GetTickCount
         SE.Play "Damage2.mp3"
@@ -79,6 +81,7 @@ Public Sub Update()
     PX = PX + 1 + 2 * (PX / 8888)
     
     If (IsKeyPress(VK_SPACE) Or Mouse.button = 1) And JumpMode = 0 Then
+        Mouse.button = 0
         JumpMode = 1
         Jumptime = GetTickCount
     End If
@@ -108,7 +111,18 @@ Public Sub Update()
         ECore.NewTransform transHighLight, 3000, "NovelPage"
     End If
     
-    If PY < 0 Then PY = 0
+    If PY < 0 Then
+        PY = 0: HitTop = HitTop + 1
+        If HitTop >= 233 Then
+            NoPower = True
+            HitTop = 0
+            Heart = 0
+        End If
+    End If
+    
+    If NoPower And X <= 500 Then
+        If GetTickCount Mod 300 < 150 Then Page.Writes "芽子疯狂撞天花板撞晕了。", GW / 2, GH / 2, 48, argb(255, 0, 0, 0), align:=StringAlignmentCenter, style:=FontStyleBold
+    End If
     
     For i = 1 To 3
         Page.DrawImage IIf(Heart >= i, "", "un") & "heart.png", 50 + (i - 1) * 100, 50, alpha:=1

@@ -22,6 +22,7 @@ Attribute VB_Exposed = False
     Dim LastHP As Long
     Dim ATK As Long, UATK As Long, ATKKind As Integer
     Dim ATKBuff As Long
+    Dim LHPCount As Long
 '======================================
 Public Sub UAttack()
 
@@ -49,7 +50,7 @@ Public Sub UAttack()
     ECore.NewTransform
 End Sub
 Public Sub Update()
-    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    If Err.Number <> 0 Then ErrCrash Err.Number, Err.Description
     On Error Resume Next
 
     '每一帧的过程（绘制过程请放在此处）
@@ -144,18 +145,27 @@ Public Sub Update()
         m = CheckMouse2
         If m >= MButtonState.mMouseIn Then Page.DrawAnimation "attackbg", GW / 2 - 100, GH - 150
         Page.DrawImage "atk" & IIf(m >= mMouseIn, 1, 0) & ".png", GW / 2 - 100, GH - 150, alpha:=1, Pos:=posOnCenter
-        If m = MButtonState.mMouseUp Then SE.Play "Cursor.mp3": Step = 1: ECore.NewTransform: RoundTime = GetTickCount
+        If m = MButtonState.mMouseUp Then
+            SE.Play "Cursor.mp3": Step = 1: ECore.NewTransform: RoundTime = GetTickCount
+            If LHPCount <= 8 Then LHPCount = 0
+        End If
         
         Page.DrawImage "def0.png", GW / 2 + 100, GH - 150, alpha:=1, Pos:=posOnCenter
-        m = CheckMouse2
-        If m >= MButtonState.mMouseIn Then Page.DrawAnimation "attackbg", GW / 2 + 100, GH - 150
-        Page.DrawImage "def" & IIf(m >= mMouseIn, 1, 0) & ".png", GW / 2 + 100, GH - 150, alpha:=1, Pos:=posOnCenter
-        If m = MButtonState.mMouseUp Then
-            UATK = (HP - LastHP)
-            HP = LastHP
-            Page.SwitchChannel "能力回流", "Default"
-            RoundTime = GetTickCount
-            SE.Play "Cursor.mp3": Step = 4: ECore.NewTransform
+        If LHPCount <= 8 Then
+            m = CheckMouse2
+            If m >= MButtonState.mMouseIn Then Page.DrawAnimation "attackbg", GW / 2 + 100, GH - 150
+            Page.DrawImage "def" & IIf(m >= mMouseIn, 1, 0) & ".png", GW / 2 + 100, GH - 150, alpha:=1, Pos:=posOnCenter
+            If m = MButtonState.mMouseUp Then
+                LHPCount = LHPCount + 1
+                UATK = (HP - LastHP)
+                HP = LastHP
+                Page.SwitchChannel "能力回流", "Default"
+                RoundTime = GetTickCount
+                SE.Play "Cursor.mp3": Step = 4: ECore.NewTransform
+            End If
+        Else
+            Page.Writes "X", GW / 2 + 100, GH - 220, 100, argb(255, 255, 0, 0), align:=StringAlignmentCenter
+            Page.Writes "卡西：好好战斗！", GW / 2 + 100, GH - 150 + 65, 18, argb(255, 255, 255, 255), align:=StringAlignmentCenter
         End If
     End If
     

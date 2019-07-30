@@ -21,10 +21,12 @@ Attribute VB_Exposed = False
     Dim PartName As String
     Dim StarTime As Long, StarDC As Long, StarGG As Long
     Dim LoadTime As Long, NoTime As Long
+    
+    Dim MouseTime As Long
 '======================================
 
 Public Sub Update()
-    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    If Err.Number <> 0 Then ErrCrash Err.Number, Err.Description
     On Error Resume Next
 
     '游戏每一帧的过程（绘制过程请放在此处）
@@ -38,11 +40,11 @@ Public Sub Update()
     ODC = Page.CDC: OGG = Page.GG
     Page.CDC = StarDC: Page.GG = StarGG
     
-    Dim Hot As Long, map() As Single
+    Dim Hot As Long, Map() As Single
     If BGM.IsPlaying Then
-        map = BGM.GetMusicMap
-        For i = 0 To UBound(map)
-            Hot = Hot + map(i)
+        Map = BGM.GetMusicMap
+        For i = 0 To UBound(Map)
+            Hot = Hot + Map(i)
         Next
     End If
     
@@ -154,6 +156,23 @@ Public Sub Update()
     Page.Writes "游戏中所有音乐，音效和部分图片资源，均从网络免费正规渠道获取。", GW / 2, GH - 73, 16, argb(105, 255, 255, 255), align:=StringAlignmentCenter
 
     Page.Writes "小说版地址：https://shequ.codemao.cn/wiki/novel/cover/47294", GW / 2, GH - 133, 16, argb(105, 255, 255, 255), align:=StringAlignmentCenter
+
+    Dim p As POINTAPI
+    GetCursorPos p
+    
+    If Mouse.y >= GH - 20 And WindowFromPoint(p.X, p.y) = GHwnd Then
+        If MouseTime = 0 Then MouseTime = GetTickCount
+        Dim MPro As Single
+        MPro = (GetTickCount - MouseTime) / 10000
+        If MPro > 1 Then MPro = 1
+        
+        MPro = Cubic(MPro, 0, 0, 0, 1)
+        BitBlt Page.CDC, 0, -60 * MPro, GW + 1, GH + 1, Page.CDC, 0, 0, vbSrcCopy
+        Page.Paint 0, 0, GH, GW + 1, 60 * MPro * 1, argb(255, 0, 0, 0), Pos:=posOnBottom
+        Page.Writes "黑嘴： (：3[▓" & IIf(GetTickCount Mod 2000 < 500, "▓", "") & IIf(GetTickCount Mod 2000 < 1000, "▓", "") & IIf(GetTickCount Mod 2000 < 1500, "▓", "") & "▓] ", GW / 2, GH + 10 - 45 * MPro, 18, argb(255 * MPro, 255, 255, 255), align:=StringAlignmentCenter
+    Else
+        MouseTime = 0
+    End If
 End Sub
 
 Public Sub Wheel(Direction As Integer, Depth As Single)

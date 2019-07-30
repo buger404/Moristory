@@ -19,7 +19,7 @@ Attribute VB_Exposed = False
 '======================================
 
 Public Sub Update()
-    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    If Err.Number <> 0 Then ErrCrash Err.Number, Err.Description
     On Error Resume Next
 
     '游戏每一帧的过程（绘制过程请放在此处）
@@ -107,15 +107,15 @@ Public Sub Update()
     
     'Page.Writes BGM.position, 20, 20, 18, argb(255, 255, 0, 0)
     
-    If BGM.position > 20 Then
+    If BGM.position > 20 And BGM.IsPlaying Then
         Dim pro1 As Single
         pro1 = (BGM.position - 20) / 3
         If pro1 > 1 Then pro1 = 1
-        Dim map() As Single, BarW As Long
+        Dim Map() As Single, BarW As Long
         BarW = Int(GW / 21)
-        map = BGM.GetMusicMap
+        Map = BGM.GetMusicMap
         For i = 0 To 20
-            Page.Paint 0, i * (BarW), GH, BarW + 1, map(i) / 5000 * GH * pro1, argb(128, 255, 255, 255), Pos:=posOnBottom
+            Page.Paint 0, i * (BarW), GH, BarW + 1, Map(i) / 5000 * GH * pro1, argb(128, 255, 255, 255), Pos:=posOnBottom
         Next
     End If
     

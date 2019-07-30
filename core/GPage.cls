@@ -198,7 +198,7 @@ Public TopPage As Boolean
                     DrawImageEx .aframes(i).picindex, X + .aframes(i).X, y + .aframes(i).y, W, h, PlayAni(S).position
                 Else
                     'Paint 0, .aframes(i).CX / 5, .aframes(i).CY / 5, .aframes(i).CW / 5, .aframes(i).CH / 5, argb(255, 255, 255, 0), style:=1, Size:=5
-                    DrawImage .aframes(i).picindex, X + .aframes(i).X, y + .aframes(i).y, .aframes(i).CX, .aframes(i).CY, .aframes(i).CW - 2, .aframes(i).CH - 1, Pos:=PlayAni(S).position, alpha:=.aframes(i).alpha, Direction:=Direction
+                    DrawImage .aframes(i).picindex, X + .aframes(i).X, y + .aframes(i).y, .aframes(i).CX, .aframes(i).CY, .aframes(i).CW - 4, .aframes(i).CH - 4, Pos:=PlayAni(S).position, alpha:=.aframes(i).alpha, Direction:=Direction
                 End If
             Next
             
@@ -206,9 +206,9 @@ Public TopPage As Boolean
             If .tick <> -1 Then
                 last = (PlayAni(S).channel(PlayAni(S).CurrentChannel).CurrentFrame = UBound(PlayAni(S).channel(PlayAni(S).CurrentChannel).frames))
                 If GetTickCount - PlayAni(S).tick >= .tick Then
-                    If .Msg = "dispose" Or .disposed Then DisposeMark = True
-                    If .Msg <> "" Then
-                        CallByName SrcClass, "AnimationMsg", VbMethod, playname, .Msg
+                    If .msg = "dispose" Or .disposed Then DisposeMark = True
+                    If .msg <> "" Then
+                        CallByName SrcClass, "AnimationMsg", VbMethod, playname, .msg
                     End If
                     If .tick <> 0 Then
                         If last Then

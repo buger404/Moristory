@@ -28,29 +28,36 @@ Attribute VB_Exposed = False
         y As Long
     End Type
     Dim Exce() As EXCEMark
+    Dim BadMARK As Boolean
 '======================================
 
 Public Sub Update()
-    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    If Err.Number <> 0 Then ErrCrash Err.Number, Err.Description
     On Error Resume Next
     
     '游戏每一帧的过程（绘制过程请放在此处）
     
     Page.Clear '清空画布
-
-    Dim Hot As Long, map() As Single
+    
+    Dim Hot As Long, Map() As Single
     If BGM.IsPlaying Then
-        map = BGM.GetMusicMap
-        For i = 0 To UBound(map)
-            Hot = Hot + map(i)
+        Map = BGM.GetMusicMap
+        For i = 0 To UBound(Map)
+            Hot = Hot + Map(i)
         Next
     End If
     
     Page.DrawImage "garden.jpg", 0, 0, alpha:=1
     Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(IIf(Hot / 300000 * 20 <= 20, Hot / 300000 * 20, 20) + 50, 255, 255, 255)
     
-    Page.DrawImage "bm-normal.png", GW / 2 - 335, 70, alpha:=1
-    Page.DrawImage "xx-normal.png", GW / 2 - 15, 150, alpha:=1
+    If BadMARK Then
+        Page.DrawImage "bm-sad.png", GW / 2 - 335, 70, alpha:=1
+        Page.DrawImage "xx-sad.png", GW / 2 - 15, 150, alpha:=1
+    Else
+        Page.DrawImage "bm-normal.png", GW / 2 - 335, 70, alpha:=1
+        Page.DrawImage "xx-normal.png", GW / 2 - 15, 150, alpha:=1
+    End If
+    
     Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(20, 0, 0, 0)
     Page.Paint 0, 0, GH * 0.75, GW + 1, GH * 0.25, argb(150, 0, 0, 0)
     
@@ -93,6 +100,14 @@ Public Sub Update()
                         .Time = GetTickCount
                     End With
                 End If
+                
+                If BGM.IsPlaying Then
+                    If UBound(Exce) = 0 And NowIndex >= 16 And BadMARK = False Then
+                        BGM.rate = 0.5
+                        BadMARK = True
+                    End If
+                End If
+                
             End If
         End If
         
@@ -194,9 +209,12 @@ Public Sub Enter()
     BGM.Create App.Path & "\music\bgm\OST 13 - Summer.mp3"
     BGM.Play
     Heart = 3
+    NowIndex = 1
+    BadMARK = False
 End Sub
 Public Sub Leave()
     '页面离开事件
+    BGM.rate = 1
 End Sub
 Public Sub Gotfocus()
     '窗口取得焦点事件
@@ -216,6 +234,8 @@ Private Sub Class_Initialize()
     Page.Res.NoLoadCrash = True
     Page.Res.newImage App.Path & "\assets\face\bm-normal.png"
     Page.Res.newImage App.Path & "\assets\face\xx-normal.png"
+    Page.Res.newImage App.Path & "\assets\face\bm-sad.png"
+    Page.Res.newImage App.Path & "\assets\face\xx-sad.png"
     Page.Res.newImage App.Path & "\assets\bg\garden.jpg", GW, GH
     Page.Res.NewImages App.Path & "\assets\BXBattle"
     Page.Res.HotLoad = True

@@ -55,7 +55,13 @@ Private Sub Form_KeyUp(KeyCode As Integer, Shift As Integer)
     
     If KeyCode = vbKeyS Then WeatherLayer.SwitchSetting
 
-    If App.LogMode = 0 And KeyCode = vbKeyF3 Then WeatherLayer.SwitchDebug
+    If KeyCode = vbKeyF3 Then
+        If App.LogMode = 0 Then
+            WeatherLayer.SwitchDebug
+        Else
+            ErrCrash 404233, "玩家尝试用Debug模式作弊"
+        End If
+    End If
 End Sub
 
 Private Sub Form_Load()

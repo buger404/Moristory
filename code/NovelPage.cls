@@ -18,6 +18,7 @@ Attribute VB_Exposed = False
     Dim Part As String
     Dim LLineTime As Long
     Dim DisplayText As String
+    Dim BGHitCount As Long, BGHitTime As Long
     Private Type Role
         Name As String
         Love As Long
@@ -305,6 +306,8 @@ Exec:
                 N.Speaker = IIf(N.Speaker = "me", N.Roles(1).Name, "me")
             End If
             N.SpeakerName = GetSpeakerName(N.Speaker)
+            ReDim Preserve Historys(UBound(Historys) + 1)
+            Historys(UBound(Historys)) = N.SpeakerName & "：" & vbCrLf
         Else
             If N.mode <> "scroll" Then
                 AddPos = 1
@@ -408,6 +411,28 @@ Public Sub DrawQues()
         End If
     Next
 End Sub
+Public Sub AddSay(Speaker As String, txt As String)
+    ReDim Preserve NLines(UBound(NLines) + 1)
+    For i = UBound(NLines) - 1 To CuLine Step -1
+        NLines(i + 1) = NLines(i)
+    Next
+    
+    NLines(CuLine) = "say\" & N.Speaker
+    
+    ReDim Preserve NLines(UBound(NLines) + 1)
+    For i = UBound(NLines) - 1 To CuLine Step -1
+        NLines(i + 1) = NLines(i)
+    Next
+    
+    NLines(CuLine) = txt
+    
+    ReDim Preserve NLines(UBound(NLines) + 1)
+    For i = UBound(NLines) - 1 To CuLine Step -1
+        NLines(i + 1) = NLines(i)
+    Next
+    
+    NLines(CuLine) = "say\" & Speaker
+End Sub
 Public Sub DrawMsg()
     If Not (Part = 16 And N.BG = "") Then
         Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(130, 0, 0, 0)
@@ -445,6 +470,8 @@ Public Sub DrawMsg()
     Dim DrawX As Long, DrawY As Long
     Dim DW As Long, DH As Long, TH As Long
     Dim DiaX As Long, DiaY As Long, RoleX As Long
+    Dim BGX As Long, BGY As Long, BGW As Long, BGH As Long
+    
     For i = 1 To UBound(N.Roles)
         If N.Roles(i).Name = "bg" Then
             If N.Roles(i - 1).Name = "xl" Then
@@ -454,6 +481,9 @@ Public Sub DrawMsg()
                 DrawX = X
                 DrawY = GH - 150
                 X = X + (Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetWidth) - IIf(UBound(N.Roles) > 3, 100, 0))
+                BGW = Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetWidth)
+                BGH = Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetHeight)
+                BGX = DrawX: BGY = DrawY - BGH
             End If
         Else
             DrawX = X
@@ -600,13 +630,13 @@ Public Sub DrawMsg()
     
     If DiaX <> 0 Then Page.Paint 0, 0, GH - 200, GW + 1, 201, argb(150, 0, 0, 0)
     
-    Dim Hot As Long, map() As Single
+    Dim Hot As Long, Map() As Single
     If BGM.IsPlaying Then
-        map = BGM.GetMusicMap
-        For i = 0 To UBound(map)
+        Map = BGM.GetMusicMap
+        For i = 0 To UBound(Map)
             If i > 8 Then Exit For
-            Page.PaintLine GW / 2 - i * 20, GH - 100 - map(i) / 1500 * 80, GW / 2 - i * 20, GH - 100 + map(i) / 1500 * 80, DiaColor2, 2
-            Page.PaintLine GW / 2 + i * 20, GH - 100 - map(i) / 1500 * 80, GW / 2 + i * 20, GH - 100 + map(i) / 1500 * 80, DiaColor2, 2
+            Page.PaintLine GW / 2 - i * 20, GH - 100 - Map(i) / 1500 * 80, GW / 2 - i * 20, GH - 100 + Map(i) / 1500 * 80, DiaColor2, 2
+            Page.PaintLine GW / 2 + i * 20, GH - 100 - Map(i) / 1500 * 80, GW / 2 + i * 20, GH - 100 + Map(i) / 1500 * 80, DiaColor2, 2
         Next
     End If
     
@@ -624,6 +654,45 @@ Public Sub DrawMsg()
             Call NextDialog
         ElseIf Mouse.button = 2 Then
             Call ShowHistory
+        End If
+    End If
+    
+    If BGX <> 0 Then
+        Dim BGMouse As Integer
+        BGMouse = CheckMouse(BGX, BGY, BGW, BGH)
+        If BGMouse > 0 Then
+            If Val(ESave.GetData("HitBGCount")) >= 4 Then
+                SetCursorPos Int(Rnd * Screen.Width / Screen.TwipsPerPixelX), Int(Rnd * Screen.Height / Screen.TwipsPerPixelY)
+            End If
+        End If
+        
+        If BGMouse > 0 And Mouse.button <> 0 And GetTickCount - BGHitTime >= 300 Then
+            BGHitCount = BGHitCount + 1
+            BGHitTime = GetTickCount
+            
+            If BGHitCount >= 23.33333 Then
+                BGHitCount = 0
+                Mouse.button = 0
+                SetCursorPos Int(Rnd * Screen.Width / Screen.TwipsPerPixelX), Int(Rnd * Screen.Height / Screen.TwipsPerPixelY)
+                Dim BGTEXT1 As String, BGTEXT2 As String
+                Select Case Val(ESave.GetData("HitBGCount"))
+                    Case 0: BGTEXT1 = "你在说什么。。。": BGTEXT2 = "别打我！"
+                    Case 1: BGTEXT1 = "哈。。？": BGTEXT2 = "拿开你的鼠标！"
+                    Case 2: BGTEXT1 = "鼠标是什么。": BGTEXT2 = "冰棍很凶哦！不准用鼠标打我！"
+                    Case 3: BGTEXT1 = "？？？？？": BGTEXT2 = "冰棍最后一次警告你哦！"
+                    Case 4: BGTEXT1 = "？？？？？": BGTEXT2 = "不可能！你怎么还能打中我！"
+                End Select
+                
+                ESave.PutData "HitBGCount", Val(ESave.GetData("HitBGCount")) + 1
+                
+                For i = 1 To UBound(N.Roles)
+                    If N.Roles(i).Name <> "bg" Then AddSay N.Roles(i).Name, BGTEXT1
+                Next
+                
+                AddSay "bg", BGTEXT2
+                
+                Call RunNovel
+            End If
         End If
     End If
     
@@ -763,7 +832,7 @@ Public Sub DrawScroll()
     If GetTickCount - LLineTime >= 3000 Then Call RunNovel
 End Sub
 Public Sub Update()
-    If Err.number <> 0 Then ErrCrash Err.number, Err.Description
+    If Err.Number <> 0 Then ErrCrash Err.Number, Err.Description
     On Error Resume Next
 
     '游戏每一帧的过程（绘制过程请放在此处）
