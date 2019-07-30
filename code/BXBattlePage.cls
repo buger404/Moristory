@@ -28,7 +28,8 @@ Attribute VB_Exposed = False
         y As Long
     End Type
     Dim Exce() As EXCEMark
-    Dim BadMARK As Boolean
+    Dim BadMark As Boolean
+    Dim EXCED As Boolean
 '======================================
 
 Public Sub Update()
@@ -50,7 +51,7 @@ Public Sub Update()
     Page.DrawImage "garden.jpg", 0, 0, alpha:=1
     Page.Paint 0, 0, 0, GW + 1, GH + 1, argb(IIf(Hot / 300000 * 20 <= 20, Hot / 300000 * 20, 20) + 50, 255, 255, 255)
     
-    If BadMARK Then
+    If BadMark Then
         Page.DrawImage "bm-sad.png", GW / 2 - 335, 70, alpha:=1
         Page.DrawImage "xx-sad.png", GW / 2 - 15, 150, alpha:=1
     Else
@@ -69,7 +70,7 @@ Public Sub Update()
     Page.Paint 0, Int(Mouse.X / W) * W, 0, W, GH + 1, IIf(GetTickCount - HurtTime <= 5000, IIf(GetTickCount Mod 300 < 150, argb(50, 255, 0, 0), argb(255, 255, 0, 0)), argb(50, 255, 255, 255))
     
     Dim Speed As Single
-    Speed = 6.2 / (1 + Cubic((BGM.position / BGM.length), 0, 1, 1, 1) * 1.14)
+    Speed = 4.5 / (1 + Cubic((BGM.position / BGM.length), 0, 1, 1, 1) * 1.14)
     
     If GetTickCount - LitTime <= 200 Then
         Pro = 1 - (GetTickCount - LitTime) / 200
@@ -99,12 +100,13 @@ Public Sub Update()
                         .y = Mouse.y
                         .Time = GetTickCount
                     End With
+                    EXCED = True
                 End If
                 
                 If BGM.IsPlaying Then
-                    If UBound(Exce) = 0 And NowIndex >= 16 And BadMARK = False Then
+                    If Not EXCED And NowIndex >= 16 And BadMark = False Then
                         BGM.rate = 0.5
-                        BadMARK = True
+                        BadMark = True
                     End If
                 End If
                 
@@ -208,9 +210,10 @@ Public Sub Enter()
     '页面进入事件
     BGM.Create App.Path & "\music\bgm\OST 13 - Summer.mp3"
     BGM.Play
+    BGM.rate = 1
     Heart = 3
     NowIndex = 1
-    BadMARK = False
+    BadMark = False
 End Sub
 Public Sub Leave()
     '页面离开事件

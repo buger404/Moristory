@@ -42,6 +42,7 @@ Class=DancePage; code\DancePage.cls
 Class=FinalPage; code\FinalPage.cls
 Class=EndingPage; code\EndingPage.cls
 Class=ErrorPage; code\ErrorPage.cls
+Class=LoadingPage; code\LoadingPage.cls
 IconForm="GameWindow"
 Startup="GameWindow"
 HelpFile=""

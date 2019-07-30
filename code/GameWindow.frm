@@ -16,6 +16,12 @@ Begin VB.Form GameWindow
    ScaleMode       =   3  'Pixel
    ScaleWidth      =   805
    StartUpPosition =   2  '屏幕中心
+   Begin VB.Timer DrawTimer 
+      Enabled         =   0   'False
+      Interval        =   10
+      Left            =   240
+      Top             =   216
+   End
 End
 Attribute VB_Name = "GameWindow"
 Attribute VB_GlobalNameSpace = False
@@ -32,7 +38,7 @@ Attribute VB_Exposed = False
 
 Private Sub DrawTimer_Timer()
     '绘制
-    
+    EC.Display
 End Sub
 
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
@@ -72,8 +78,14 @@ Private Sub Form_Load()
     '创建页面管理器
     Set EC = New GMan
 
+    Set LoadingPage = New LoadingPage
+    ECore.ActivePage = "LoadingPage"
+
     '开始显示
     Me.Show
+    
+    HideLOGO = 1
+    DisableLOGO = 1
     
     Set BGM = New GMusic
     Set BGS = New GMusic
@@ -87,6 +99,8 @@ Private Sub Form_Load()
     '创建存档（可选）
     Set ESave = New GSaving
     ESave.Create "Moristory.TIMELINE", "kj" & Val(Me.Visible) & "Ehsd" & Val(VB.Screen.FontCount <> 0) & "Cdfd" & Right(Left("54B89", 3), 1) & "3fdkg5" & UCase("d") & "gsA6D1F7305BEjAC8738C" & CLng("&HE2") & "kjgds"
+    
+    DrawTimer.Enabled = True
 
     '在此处初始化你的页面
     '=============================================
@@ -110,7 +124,7 @@ Private Sub Form_Load()
     '=============================================
 
     '设置活动页面
-    If EC.ActivePage = "" Then EC.ActivePage = "MainPage"
+    EC.NewTransform transDarkReturn, 1000, "MainPage"
     
     Dim Time As Long, FPSTime As Long, FPS As Long, FPSTick As Long, FPSTarget As Long
     Dim LockFPS1 As Long, LockFPS2 As Long, Changed As Boolean
@@ -120,6 +134,8 @@ Private Sub Form_Load()
     '   LockFPS2：锁定的目标帧数（帧数不够时）
         LockFPS1 = 60: LockFPS2 = 40
     '======================================================================
+    
+    DrawTimer.Enabled = False
     
     Do While EndMark = False
         '锁定帧数！

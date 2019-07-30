@@ -459,28 +459,36 @@ Public Sub DrawMsg()
         If GetTickCount - MsgTime >= 25 And AddingText <> "" Then DisplayText = DisplayText & Mid(AddingText, AddPos, 1): AddPos = AddPos + 1: MsgTime = GetTickCount
     End If
     
-    Dim X As Long
-    X = GW / 2
+    Dim TotalW As Long, CloseW As Long
     For i = 1 To UBound(N.Roles)
-        If N.Roles(i).Name <> "bg" Then X = X - (Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetWidth) + 50 - IIf(UBound(N.Roles) > 3, 100, 0)) / 2
+        If N.Roles(i).Name <> "bg" Then
+            TotalW = TotalW + Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetWidth)
+        ElseIf N.Roles(i - 1).Name <> "xl" Then
+            TotalW = TotalW + Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetWidth)
+        End If
     Next
-    
-    X = X + 30
-    
+    If TotalW >= GW - 300 Then
+        CloseW = (TotalW - (GW - 300)) / (UBound(N.Roles) - 1)
+        X = 150
+    Else
+        X = GW / 2 - TotalW / 2
+    End If
+
     Dim DrawX As Long, DrawY As Long
     Dim DW As Long, DH As Long, TH As Long
     Dim DiaX As Long, DiaY As Long, RoleX As Long
     Dim BGX As Long, BGY As Long, BGW As Long, BGH As Long
+    Dim SpX As Long, SpY As Long, SpI As Integer
     
     For i = 1 To UBound(N.Roles)
         If N.Roles(i).Name = "bg" Then
             If N.Roles(i - 1).Name = "xl" Then
-                DrawX = X - (Page.Res.ImgSize(N.Roles(i - 1).Name & "-" & N.Roles(i - 1).Face & ".png", imgGetWidth) + 0) + 210
+                DrawX = X - (Page.Res.ImgSize(N.Roles(i - 1).Name & "-" & N.Roles(i - 1).Face & ".png", imgGetWidth) + CloseW) + 210
                 DrawY = GH - 400
             Else
                 DrawX = X
                 DrawY = GH - 150
-                X = X + (Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetWidth) - IIf(UBound(N.Roles) > 3, 100, 0))
+                X = X + (Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetWidth) - CloseW)
                 BGW = Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetWidth)
                 BGH = Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetHeight)
                 BGX = DrawX: BGY = DrawY - BGH
@@ -489,9 +497,15 @@ Public Sub DrawMsg()
             DrawX = X
             DrawY = GH + 140 + IIf(N.Roles(i).Name = "yy", -200, 0) + IIf(N.Roles(i).Name = "ssr", -200, 0) + IIf(N.Roles(i).Name = "xl", -250, 0) + IIf(Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetHeight) < 400, -400, 0)
             
-            X = X + (Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetWidth) - IIf(UBound(N.Roles) > 3, 100, 0))
+            X = X + (Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetWidth) - CloseW)
         End If
-            Page.DrawImage N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", DrawX, DrawY, alpha:=IIf(N.Speaker <> N.Roles(i).Name And Speaker <> "aside", 0.7, 1), Pos:=posOnBottom
+        
+        If N.Speaker <> N.Roles(i).Name And Speaker <> "aside" Then
+            Page.DrawImage N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", DrawX, DrawY, alpha:=0.7, Pos:=posOnBottom
+        ElseIf N.Speaker = N.Roles(i).Name Then
+            SpX = DrawX: SpY = DrawY: SpI = i
+        End If
+        
         If N.Roles(i).Name = N.Speaker Then
             RoleX = DrawX
             DW = EF.GetWidth(Page.GG, DisplayText, 17, StringAlignmentNear, FontStyleRegular)
@@ -501,6 +515,8 @@ Public Sub DrawMsg()
             DiaY = DrawY - Page.Res.ImgSize(N.Roles(i).Name & "-" & N.Roles(i).Face & ".png", imgGetHeight) - DH - TH - 20
         End If
     Next
+    
+    If SpI <> 0 Then Page.DrawImage N.Roles(SpI).Name & "-" & N.Roles(SpI).Face & ".png", SpX, SpY, alpha:=1, Pos:=posOnBottom
     
     Dim CMode As Boolean, CModeX As Long
     
@@ -714,7 +730,7 @@ Public Sub DrawMsg()
     Page.DrawImage "escbtn.png", 20, 140, alpha:=1
     If CheckMouse2 >= mMouseIn And Mouse.button = 1 Then
         Mouse.state = 0: Mouse.button = 0
-        ECore.NewTransform transDarkReturn, 1000, "MainPage"
+        If MsgBox("你当前的游戏进度将会丢失，确定返回？", vbYesNo, "Moristory") = vbYes Then ECore.NewTransform transDarkReturn, 1000, "MainPage"
     End If
 End Sub
 Public Sub KeyUp(KeyCode As Integer)
@@ -722,7 +738,7 @@ Public Sub KeyUp(KeyCode As Integer)
         NovelPage.NextDialog
     End If
     If (KeyCode = vbKeyEscape) And N.mode = "msg" Then
-        ECore.NewTransform transDarkReturn, 1000, "MainPage"
+        If MsgBox("你当前的游戏进度将会丢失，确定返回？", vbYesNo, "Moristory") = vbYes Then ECore.NewTransform transDarkReturn, 1000, "MainPage"
     End If
     If KeyCode = vbKeyX And N.mode <> "his" Then
         NovelPage.ShowHistory

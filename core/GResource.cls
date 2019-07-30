@@ -346,6 +346,8 @@ Public Sub newImage(Path As String, Optional arg1, Optional arg2, Optional Name 
     'when arg1 is missing ; i.w = i.w
     'when arg2 is missing but arg1 has content ; i.w = i.w * arg1
     'other ; i.w = arg1
+    DoEvents
+    CrashPro = 1
     
     Dim si As Integer, i As Long, W As Long, h As Long, DC As Long, g As Long
     If IsMissing(arg1) Then si = 0
@@ -453,8 +455,10 @@ Public Sub newImage(Path As String, Optional arg1, Optional arg2, Optional Name 
 
             If tCo(3) = 255 Then ColorLists(UBound(ColorLists)).IsAlpha(X, y) = True
         Next
+        CrashPro = X / (W - 1)
         DoEvents
     Next
+    CrashPro = 1
     
     Mems(UBound(Mems)).CrashIndex = UBound(ColorLists)
 End Sub
